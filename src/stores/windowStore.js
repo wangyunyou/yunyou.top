@@ -99,6 +99,30 @@ export const useWindowStore = defineStore('window', () => {
     }
   };
 
+  const toggleMaximize = (id) => {
+    const win = windows.value.find((w) => w.id === id);
+    if (win) {
+      if (!win.isMaximized) {
+        win.oldX = win.x;
+        win.oldY = win.y;
+        win.oldWidth = win.width;
+        win.oldHeight = win.height;
+        
+        win.x = 0;
+        win.y = 0;
+        win.width = window.innerWidth;
+        win.height = window.innerHeight - 48;
+        win.isMaximized = true;
+      } else {
+        win.x = win.oldX || 0;
+        win.y = win.oldY || 0;
+        win.width = win.oldWidth || 800;
+        win.height = win.oldHeight || 600;
+        win.isMaximized = false;
+      }
+    }
+  };
+
   return {
     windows,
     activeWindowId,
@@ -109,5 +133,6 @@ export const useWindowStore = defineStore('window', () => {
     focusWindow,
     updateWindowPosition,
     updateWindowSize,
+    toggleMaximize,
   };
 });

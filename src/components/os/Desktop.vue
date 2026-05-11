@@ -1,8 +1,9 @@
 <script setup>
 import { useWindowStore } from '../../stores/windowStore';
+import { useConfigStore } from '../../stores/configStore';
 import DesktopIcon from './DesktopIcon.vue';
 import Window from './Window.vue';
-import { User, Terminal, Briefcase, Settings, Activity, MessagesSquare } from 'lucide-vue-next';
+import { User, Terminal, Briefcase, Settings, Activity, MessagesSquare, Music, Gamepad2 } from 'lucide-vue-next';
 
 // Import Apps
 import AboutApp from '../apps/AboutApp.vue';
@@ -11,12 +12,12 @@ import TerminalApp from '../apps/TerminalApp.vue';
 import SettingsApp from '../apps/SettingsApp.vue';
 import SystemMonitorApp from '../apps/SystemMonitorApp.vue';
 import ChatApp from '../apps/ChatApp.vue';
+import MusicApp from '../apps/MusicApp.vue';
+import SnakeGameApp from '../apps/SnakeGameApp.vue';
 import { markRaw, onMounted } from 'vue';
 
 const windowStore = useWindowStore();
-
-const backgroundUrl =
-  'https://images.unsplash.com/photo-1635776062127-d379bfcba9f8?q=80&w=3132&auto=format&fit=crop';
+const configStore = useConfigStore();
 
 // Map strings to components
 const appMap = {
@@ -26,6 +27,8 @@ const appMap = {
   SettingsApp: markRaw(SettingsApp),
   SystemMonitorApp: markRaw(SystemMonitorApp),
   ChatApp: markRaw(ChatApp),
+  MusicApp: markRaw(MusicApp),
+  SnakeGameApp: markRaw(SnakeGameApp),
 };
 
 const openApp = (id, title, componentName) => {
@@ -46,7 +49,7 @@ onMounted(() => {
 <template>
   <div
     class="desktop h-screen w-screen relative overflow-hidden bg-cover bg-center select-none"
-    :style="{ backgroundImage: `url(${backgroundUrl})` }"
+    :style="{ backgroundImage: `url(${configStore.wallpaper})` }"
     @click.self="windowStore.activeWindowId = null"
   >
     <!-- Background Overlay for Depth -->
@@ -85,6 +88,16 @@ onMounted(() => {
         label="设置中心"
         :icon-component="Settings"
         @click="openApp('settings', '系统设置', 'SettingsApp')"
+      />
+      <DesktopIcon
+        label="云优音乐"
+        :icon-component="Music"
+        @click="openApp('music', '云优音乐', 'MusicApp')"
+      />
+      <DesktopIcon
+        label="贪吃蛇"
+        :icon-component="Gamepad2"
+        @click="openApp('snake', '贪吃蛇大作战', 'SnakeGameApp')"
       />
     </div>
 
