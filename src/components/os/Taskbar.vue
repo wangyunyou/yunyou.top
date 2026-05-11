@@ -2,8 +2,10 @@
 import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { useWindowStore } from '../../stores/windowStore';
 import { Monitor, Square, Minus, X, Radio } from 'lucide-vue-next';
+import { usePresenceStore } from '../../stores/presenceStore';
 
 const windowStore = useWindowStore();
+const presenceStore = usePresenceStore();
 
 const emit = defineEmits(['toggle-hacker']);
 const time = ref(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
@@ -76,6 +78,10 @@ const handleTaskbarClick = (win) => {
 
     <!-- System Tray -->
     <div class="flex items-center gap-6">
+      <div class="flex items-center gap-1.5 px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full text-emerald-400 text-[10px] font-bold">
+        <div class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+        {{ presenceStore.onlineCount }} 人在线
+      </div>
 
       <div class="flex items-center gap-4 text-slate-200 text-xs font-mono tracking-tighter">
         <span>{{ time }}</span>

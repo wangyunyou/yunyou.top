@@ -4,12 +4,49 @@ import { useConfigStore } from '../../stores/configStore';
 import { Send, Bot, User, Loader2, Sparkles, Trash2, Key, Info } from 'lucide-vue-next';
 
 const configStore = useConfigStore();
-const messages = ref([
+const messages = ref(JSON.parse(localStorage.getItem('yunyou-ai-messages')) || [
   { role: 'assistant', content: '你好！我是云优 AI 助手，很高兴为你服务。有什么我可以帮你的吗？' }
 ]);
 const input = ref('');
 const isTyping = ref(false);
+const isComposing = ref(false);
 const chatContainer = ref(null);
+const textareaRef = ref(null);
+
+// Persistence
+import { watch } from 'vue';
+watch(messages, (newVal) => {
+  localStorage.setItem('yunyou-ai-messages', JSON.stringify(newVal));
+}, { deep: true });
+
+// Simple Markdown-ish Renderer
+const renderContent = (content) => {
+  if (!content) return '';
+  let html = content
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+
+  // Code blocks: ```code```
+  html = html.replace(/```([\s\S]*?)```/g, (match, code) => {
+    return `<pre class="bg-black/40 p-4 rounded-xl my-3 font-mono text-xs overflow-x-auto border border-white/10 text-emerald-400"><code>${code.trim()}</code></pre>`;
+  });
+
+  // Inline code: `code`
+  html = html.replace(/`([^`]+)`/g, '<code class="bg-white/10 px-1.5 py-0.5 rounded text-rose-400 font-mono text-xs">$1</code>');
+
+  // Bold: **text**
+  html = html.replace(/\*\*([^*]+)\*\*/g, '<strong class="font-bold text-white">$1</strong>');
+
+  return html;
+};
+
+// Auto-grow Textarea
+const adjustTextarea = () => {
+  if (!textareaRef.value) return;
+  textareaRef.value.style.height = 'auto';
+  textareaRef.value.style.height = Math.min(textareaRef.value.scrollHeight, 120) + 'px';
+};
 
 const scrollToBottom = async () => {
   await nextTick();
@@ -19,9 +56,9 @@ const scrollToBottom = async () => {
 };
 
 const sendMessage = async () => {
-  if (!input.value.trim() || isTyping.ref) return;
+  if (!input.value.trim() || isTyping.value || isComposing.value) return;
   if (!configStore.zhipuKey) {
-    alert('请先在设置中配置智谱 AI API Key');
+    alert('请配置通讯密钥后再试');
     return;
   }
 
@@ -29,6 +66,9 @@ const sendMessage = async () => {
   messages.value.push({ role: 'user', content: userContent });
   input.value = '';
   isTyping.value = true;
+  
+  // Create an empty placeholder for the assistant's response
+  const assistantMessageIndex = messages.value.push({ role: 'assistant', content: '' }) - 1;
   scrollToBottom();
 
   try {
@@ -40,26 +80,48 @@ const sendMessage = async () => {
       },
       body: JSON.stringify({
         model: 'glm-4-flash',
-        messages: messages.value.map(m => ({ role: m.role, content: m.content })),
-        stream: false
+        messages: messages.value.slice(0, -1).map(m => ({ role: m.role, content: m.content })),
+        stream: true
       })
     });
 
-    const data = await response.json();
-    
-    if (data.choices && data.choices[0]) {
-      messages.value.push({
-        role: 'assistant',
-        content: data.choices[0].message.content
-      });
-    } else {
-      throw new Error(data.error?.message || '未知错误');
+    if (!response.ok) {
+      const err = await response.json();
+      throw new Error(err.error?.message || '网络连接异常');
+    }
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let partialData = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      const chunk = decoder.decode(value, { stream: true });
+      const lines = (partialData + chunk).split('\n');
+      partialData = lines.pop(); // Keep incomplete line
+
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed || trimmed === 'data: [DONE]') continue;
+        
+        if (trimmed.startsWith('data: ')) {
+          try {
+            const data = JSON.parse(trimmed.slice(6));
+            const delta = data.choices?.[0]?.delta?.content || '';
+            if (delta) {
+              messages.value[assistantMessageIndex].content += delta;
+              scrollToBottom();
+            }
+          } catch (e) {
+            console.error('SSE Error:', e);
+          }
+        }
+      }
     }
   } catch (error) {
-    messages.value.push({
-      role: 'assistant',
-      content: `抱歉，出错了：${error.message}`
-    });
+    messages.value[assistantMessageIndex].content = `抱歉，通讯中断：${error.message}`;
   } finally {
     isTyping.value = false;
     scrollToBottom();
@@ -70,6 +132,7 @@ const clearChat = () => {
   messages.value = [
     { role: 'assistant', content: '会话已重置。有什么新问题吗？' }
   ];
+  localStorage.removeItem('yunyou-ai-messages');
 };
 </script>
 
@@ -116,14 +179,14 @@ const clearChat = () => {
         </div>
         
         <div 
-          class="px-4 py-3 rounded-2xl text-sm leading-relaxed shadow-xl border"
+          class="px-4 py-3 rounded-2xl text-sm leading-relaxed shadow-xl border ai-content"
           :class="[
             msg.role === 'assistant' 
               ? 'bg-slate-900/80 border-white/5 text-slate-200 rounded-tl-none' 
               : 'bg-indigo-600 border-indigo-500 text-white rounded-tr-none'
           ]"
+          v-html="renderContent(msg.content)"
         >
-          <p class="whitespace-pre-wrap">{{ msg.content }}</p>
         </div>
       </div>
 
@@ -144,9 +207,13 @@ const clearChat = () => {
     <div class="p-6 bg-slate-900/50 backdrop-blur-xl border-t border-white/5">
       <div class="max-w-3xl mx-auto relative group">
         <textarea 
+          ref="textareaRef"
           v-model="input"
-          @keydown.enter.prevent="sendMessage"
-          placeholder="给云优 AI 发送消息..."
+          @input="adjustTextarea"
+          @keydown.enter="e => { if (!e.shiftKey) { e.preventDefault(); sendMessage(); } }"
+          @compositionstart="isComposing = true"
+          @compositionend="isComposing = false"
+          placeholder="给云优 AI 发送消息... (Shift+Enter 换行)"
           class="w-full bg-slate-950 border border-white/10 rounded-2xl px-5 py-4 pr-14 text-sm focus:outline-none focus:border-indigo-500/50 transition-all placeholder:text-slate-600 resize-none h-14 max-h-32 scrollbar-none"
           :disabled="isTyping"
         ></textarea>
