@@ -42,12 +42,6 @@ const openApp = (id, title, componentName) => {
   }
 };
 
-// 自动打开聊天窗口
-onMounted(() => {
-  setTimeout(() => {
-    openApp('chat', '匿名聊天室', 'ChatApp');
-  }, 1000); // 延迟1秒打开，增加一点“启动感”
-});
 </script>
 
 <template>
@@ -63,6 +57,24 @@ onMounted(() => {
     <div
       class="grid grid-flow-col grid-rows-[repeat(auto-fill,100px)] gap-6 p-8 absolute top-0 left-0 bottom-12 w-fit z-10"
     >
+      <!-- Primary Apps (Reordered per user request) -->
+      <DesktopIcon
+        label="匿名聊天"
+        :icon-component="MessagesSquare"
+        @click="openApp('chat', '匿名聊天室', 'ChatApp')"
+      />
+      <DesktopIcon
+        label="云优短视频"
+        :icon-component="Film"
+        @click="openApp('video', '云优短视频', 'VideoApp')"
+      />
+      <DesktopIcon
+        label="云优相册"
+        :icon-component="ImageIcon"
+        @click="openApp('gallery', '云优相册', 'GalleryApp')"
+      />
+
+      <!-- Secondary Apps -->
       <DesktopIcon
         label="关于我"
         :icon-component="User"
@@ -77,11 +89,6 @@ onMounted(() => {
         label="终端"
         :icon-component="Terminal"
         @click="openApp('terminal', '系统终端', 'TerminalApp')"
-      />
-      <DesktopIcon
-        label="匿名聊天"
-        :icon-component="MessagesSquare"
-        @click="openApp('chat', '匿名聊天室', 'ChatApp')"
       />
       <DesktopIcon
         label="系统监控"
@@ -102,16 +109,6 @@ onMounted(() => {
         label="贪吃蛇"
         :icon-component="Gamepad2"
         @click="openApp('snake', '贪吃蛇大作战', 'SnakeGameApp')"
-      />
-      <DesktopIcon
-        label="云优短视频"
-        :icon-component="Film"
-        @click="openApp('video', '云优短视频', 'VideoApp')"
-      />
-      <DesktopIcon
-        label="云优相册"
-        :icon-component="ImageIcon"
-        @click="openApp('gallery', '云优相册', 'GalleryApp')"
       />
     </div>
 
