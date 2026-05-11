@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted, nextTick } from 'vue';
-import MatrixRain from '@/components/os/MatrixRain.vue';
+import MatrixRain from '../os/MatrixRain.vue';
 
 const output = ref([
   { type: 'info', text: 'YunYou OS [Version 2.0.0]' },

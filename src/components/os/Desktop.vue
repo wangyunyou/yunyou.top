@@ -1,15 +1,16 @@
 <script setup>
-import { useWindowStore } from '@/stores/windowStore';
+import { useWindowStore } from '../../stores/windowStore';
 import DesktopIcon from './DesktopIcon.vue';
 import Window from './Window.vue';
-import { User, Terminal, Briefcase, Settings } from 'lucide-vue-next';
+import { User, Terminal, Briefcase, Settings, Activity, MessagesSquare } from 'lucide-vue-next';
 
-// Import Apps (we will create these next)
-import AboutApp from '@/components/apps/AboutApp.vue';
-import ProjectsApp from '@/components/apps/ProjectsApp.vue';
-import TerminalApp from '@/components/apps/TerminalApp.vue';
-import SettingsApp from '@/components/apps/SettingsApp.vue';
-import SystemMonitorApp from '@/components/apps/SystemMonitorApp.vue';
+// Import Apps
+import AboutApp from '../apps/AboutApp.vue';
+import ProjectsApp from '../apps/ProjectsApp.vue';
+import TerminalApp from '../apps/TerminalApp.vue';
+import SettingsApp from '../apps/SettingsApp.vue';
+import SystemMonitorApp from '../apps/SystemMonitorApp.vue';
+import ChatApp from '../apps/ChatApp.vue';
 import { markRaw } from 'vue';
 
 const windowStore = useWindowStore();
@@ -24,6 +25,7 @@ const appMap = {
   TerminalApp: markRaw(TerminalApp),
   SettingsApp: markRaw(SettingsApp),
   SystemMonitorApp: markRaw(SystemMonitorApp),
+  ChatApp: markRaw(ChatApp),
 };
 
 const openApp = (id, title, componentName) => {
@@ -45,32 +47,37 @@ const openApp = (id, title, componentName) => {
 
     <!-- Desktop Icons Grid -->
     <div
-      class="grid grid-flow-col grid-rows-[repeat(auto-fill,100px)] gap-6 p-8 absolute top-0 left-0 bottom-12 w-fit z-0"
+      class="grid grid-flow-col grid-rows-[repeat(auto-fill,100px)] gap-6 p-8 absolute top-0 left-0 bottom-12 w-fit z-10"
     >
       <DesktopIcon
         label="About Me"
         :icon-component="User"
-        @dblclick="openApp('about', 'About Me', 'AboutApp')"
+        @click="openApp('about', 'About Me', 'AboutApp')"
       />
       <DesktopIcon
         label="Projects"
         :icon-component="Briefcase"
-        @dblclick="openApp('projects', 'Projects', 'ProjectsApp')"
+        @click="openApp('projects', 'Projects', 'ProjectsApp')"
       />
       <DesktopIcon
         label="Terminal"
         :icon-component="Terminal"
-        @dblclick="openApp('terminal', 'Terminal', 'TerminalApp')"
+        @click="openApp('terminal', 'Terminal', 'TerminalApp')"
+      />
+      <DesktopIcon
+        label="Chat"
+        :icon-component="MessagesSquare"
+        @click="openApp('chat', 'Anonymous Chat', 'ChatApp')"
       />
       <DesktopIcon
         label="System"
         :icon-component="Activity"
-        @dblclick="openApp('monitor', 'System Monitor', 'SystemMonitorApp')"
+        @click="openApp('monitor', 'System Monitor', 'SystemMonitorApp')"
       />
       <DesktopIcon
         label="Settings"
         :icon-component="Settings"
-        @dblclick="openApp('settings', 'Settings', 'SettingsApp')"
+        @click="openApp('settings', 'Settings', 'SettingsApp')"
       />
     </div>
 

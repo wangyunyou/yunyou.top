@@ -1,16 +1,17 @@
 <script setup>
 import { ref, onMounted, onUnmounted, computed } from 'vue';
-import { useWindowStore } from '@/stores/windowStore';
-import { Monitor, Square, Minus, X } from 'lucide-vue-next';
+import { useWindowStore } from '../../stores/windowStore';
+import { Monitor, Square, Minus, X, Radio } from 'lucide-vue-next';
 
 const windowStore = useWindowStore();
 
-const time = ref(new Date().toLocaleTimeString());
+const emit = defineEmits(['toggle-hacker']);
+const time = ref(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
 let timer;
 
 onMounted(() => {
   timer = setInterval(() => {
-    time.value = new Date().toLocaleTimeString();
+    time.value = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   }, 1000);
 });
 
@@ -19,8 +20,6 @@ onUnmounted(() => {
 });
 
 const activeWindows = computed(() => {
-  // Filter out hidden windows if we had any logic for that,
-  // but for now show all open windows on taskbar
   return windowStore.windows;
 });
 
@@ -39,15 +38,15 @@ const handleTaskbarClick = (win) => {
 
 <template>
   <div
-    class="h-12 w-full bg-slate-900/80 backdrop-blur-md border-t border-slate-700/50 absolute bottom-0 left-0 flex items-center px-4 justify-between z-50"
+    class="h-12 w-full bg-slate-900/60 backdrop-blur-xl border-t border-white/10 absolute bottom-0 left-0 flex items-center px-4 justify-between z-[100]"
   >
     <!-- Start Button & Active Apps -->
     <div class="flex items-center gap-4 h-full">
-      <button class="p-2 rounded hover:bg-white/10 transition-colors">
-        <Monitor class="w-6 h-6 text-sky-400" />
+      <button class="p-2 rounded-lg hover:bg-white/10 transition-all active:scale-90 group">
+        <Monitor class="w-6 h-6 text-sky-400 group-hover:drop-shadow-[0_0_8px_#38bdf8]" />
       </button>
 
-      <div class="h-8 w-[1px] bg-slate-700"></div>
+      <div class="h-6 w-[1px] bg-white/10"></div>
 
       <!-- Application Strip -->
       <div class="flex items-center gap-2">
@@ -55,29 +54,40 @@ const handleTaskbarClick = (win) => {
           v-for="win in activeWindows"
           :key="win.id"
           @click="handleTaskbarClick(win)"
-          class="px-3 h-10 rounded flex items-center gap-2 transition-all min-w-[120px] max-w-[200px]"
+          class="px-4 h-9 rounded-lg flex items-center gap-3 transition-all min-w-[140px] max-w-[220px] border border-transparent"
           :class="[
             win.id === windowStore.activeWindowId && !win.isMinimized
-              ? 'bg-slate-700 border-b-2 border-sky-400'
-              : 'hover:bg-slate-800 border-b-2 border-transparent hover:border-slate-600',
+              ? 'bg-white/10 border-white/20 shadow-lg'
+              : 'hover:bg-white/5',
           ]"
         >
           <div
-            class="w-2 h-2 rounded-full"
+            class="w-1.5 h-1.5 rounded-full"
             :class="
-              win.id === windowStore.activeWindowId
-                ? 'bg-sky-400'
-                : 'bg-slate-400'
+              win.id === windowStore.activeWindowId && !win.isMinimized
+                ? 'bg-sky-400 animate-pulse'
+                : 'bg-slate-500'
             "
           ></div>
-          <span class="text-sm truncate text-slate-200">{{ win.title }}</span>
+          <span class="text-xs font-medium truncate text-slate-100">{{ win.title }}</span>
         </button>
       </div>
     </div>
 
     <!-- System Tray -->
-    <div class="flex items-center gap-4 text-slate-200 text-sm">
-      <span>{{ time }}</span>
+    <div class="flex items-center gap-6">
+      <!-- Hacker Mode Toggle -->
+      <button 
+        @click="$emit('toggle-hacker')"
+        class="flex items-center gap-2 px-3 py-1 rounded-full bg-sky-500/10 border border-sky-500/30 text-sky-400 hover:bg-sky-500/20 transition-all group"
+      >
+        <Radio class="w-3.5 h-3.5 animate-pulse" />
+        <span class="text-[10px] font-bold tracking-widest uppercase">Movie Mode</span>
+      </button>
+
+      <div class="flex items-center gap-4 text-slate-200 text-xs font-mono tracking-tighter">
+        <span>{{ time }}</span>
+      </div>
     </div>
   </div>
 </template>

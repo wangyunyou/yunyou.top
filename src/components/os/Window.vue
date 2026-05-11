@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed } from 'vue';
-import { useWindowStore } from '@/stores/windowStore';
+import { useWindowStore } from '../../stores/windowStore';
 import { useDraggable } from '@vueuse/core';
 import { Minus, Square, X } from 'lucide-vue-next';
 
