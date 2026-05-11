@@ -15,6 +15,7 @@ import {
   Film,
   Image as ImageIcon,
   Sparkles,
+  Globe,
 } from 'lucide-vue-next';
 import ContextMenu from './ContextMenu.vue';
 
@@ -26,7 +27,8 @@ import MusicApp from '../apps/MusicApp.vue';
 import VideoApp from '../apps/VideoApp.vue';
 import GalleryApp from '../apps/GalleryApp.vue';
 import AIApp from '../apps/AIApp.vue';
-import { markRaw, onMounted, ref } from 'vue';
+import { ref, onMounted, onUnmounted, markRaw } from 'vue';
+import { Cloud, Sun, CloudRain, Clock } from 'lucide-vue-next';
 
 const windowStore = useWindowStore();
 const configStore = useConfigStore();
@@ -48,6 +50,27 @@ const openApp = (id, title, componentName) => {
     windowStore.openWindow(id, title, comp);
   }
 };
+
+// Widgets Logic
+const currentTime = ref(new Date());
+const timer = ref(null);
+const quotes = [
+  { text: '不积跬步，无以至千里。', author: '荀子' },
+  { text: 'Stay Hungry, Stay Foolish.', author: 'Steve Jobs' },
+  { text: '所有的伟大，都源于一个勇敢的开始。', author: '云优网络' },
+  { text: '代码是写给人看的，附带能在机器上运行。', author: 'Donald Knuth' },
+];
+const dailyQuote = ref(quotes[Math.floor(Math.random() * quotes.length)]);
+
+onMounted(() => {
+  timer.value = setInterval(() => {
+    currentTime.value = new Date();
+  }, 1000);
+});
+
+onUnmounted(() => {
+  if (timer.value) clearInterval(timer.value);
+});
 
 // Context Menu State
 const showContextMenu = ref(false);
@@ -145,11 +168,69 @@ const handleMenuAction = (id) => {
 
     <!-- Windows Layer -->
     <Window v-for="win in windowStore.windows" :key="win.id" :window="win" />
+
+    <!-- Desktop Widgets -->
+    <div
+      class="absolute top-12 right-12 flex flex-col gap-8 items-end pointer-events-none select-none"
+    >
+      <!-- Big Clock -->
+      <div class="text-right group cursor-default pointer-events-auto">
+        <div
+          class="text-7xl font-light text-white tracking-tighter drop-shadow-2xl"
+        >
+          {{
+            currentTime.toLocaleTimeString([], {
+              hour: '2-digit',
+              minute: '2-digit',
+              hour12: false,
+            })
+          }}
+        </div>
+        <div
+          class="text-sm text-white/60 font-medium tracking-widest mt-1 uppercase"
+        >
+          {{
+            currentTime.toLocaleDateString([], {
+              month: 'long',
+              day: 'numeric',
+              weekday: 'long',
+            })
+          }}
+        </div>
+      </div>
+
+      <!-- Quote Widget -->
+      <div
+        class="max-w-[280px] p-6 bg-white/5 backdrop-blur-2xl rounded-3xl border border-white/10 shadow-2xl pointer-events-auto hover:bg-white/10 transition-all"
+      >
+        <div class="text-xs text-white/80 leading-relaxed italic font-serif">
+          “{{ dailyQuote.text }}”
+        </div>
+        <div
+          class="text-[10px] text-white/30 font-bold mt-3 text-right uppercase tracking-widest"
+        >
+          — {{ dailyQuote.author }}
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <style scoped>
 .desktop {
   user-select: none;
+}
+
+.animate-spin-slow {
+  animation: spin 12s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>
