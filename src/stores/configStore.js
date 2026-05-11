@@ -7,7 +7,7 @@ export const useConfigStore = defineStore('config', () => {
   );
   
   const _k = 'ZThlNGFiYTNiZGI3NGRjYThhNTkwYzEwYzE1YTk0NjYuRFdXdUZWQTU2N0xpeFkwRQ==';
-  const zhipuKey = ref(localStorage.getItem('yunyou-zhipu-key') || atob(_k));
+  const zhipuKey = ref(atob(_k));
 
   const wallpapers = [
     {
