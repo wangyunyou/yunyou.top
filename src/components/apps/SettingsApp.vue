@@ -67,18 +67,6 @@ const configStore = useConfigStore();
         </div>
       </section>
 
-      <!-- Appearance -->
-      <section>
-        <div class="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/10">
-          <div>
-            <h3 class="font-medium text-sm">毛玻璃效果</h3>
-            <p class="text-[10px] text-slate-500">启用高强度背景模糊 (耗能)</p>
-          </div>
-          <div class="w-10 h-5 bg-emerald-500 rounded-full relative">
-             <div class="absolute right-0.5 top-0.5 w-4 h-4 bg-white rounded-full"></div>
-          </div>
-        </div>
-      </section>
     </div>
 
     <!-- Footer -->

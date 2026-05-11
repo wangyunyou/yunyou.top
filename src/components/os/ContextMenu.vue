@@ -32,7 +32,6 @@ const actions = [
   { id: 'monitor', label: '系统监控', icon: Monitor },
   { id: 'settings', label: '系统设置', icon: Settings },
   { divider: true },
-  { id: 'about', label: '关于云优 OS', icon: Info },
   { id: 'github', label: '源码地址', icon: ExternalLink },
 ];
 

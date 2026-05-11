@@ -205,46 +205,6 @@ onUnmounted(() => {
             autoplay
           ></video>
 
-          <!-- UI Overlays (Same as before) -->
-          <div
-            class="absolute bottom-10 right-4 flex flex-col gap-6 items-center z-30"
-          >
-            <div class="flex flex-col items-center gap-1">
-              <div
-                class="p-3 bg-white/10 backdrop-blur-xl rounded-full text-white cursor-pointer"
-              >
-                <Heart class="w-6 h-6" />
-              </div>
-              <span class="text-[10px] font-bold text-white/50">99k+</span>
-            </div>
-            <div class="flex flex-col items-center gap-1">
-              <div
-                class="p-3 bg-white/10 backdrop-blur-xl rounded-full text-white cursor-pointer"
-              >
-                <MessageCircle class="w-6 h-6" />
-              </div>
-              <span class="text-[10px] font-bold text-white/50">1.2k</span>
-            </div>
-            <div class="flex flex-col items-center gap-1">
-              <div
-                class="p-3 bg-white/10 backdrop-blur-xl rounded-full text-white cursor-pointer"
-              >
-                <Share2 class="w-6 h-6" />
-              </div>
-              <span class="text-[10px] font-bold text-white/50">分享</span>
-            </div>
-          </div>
-
-          <div
-            class="absolute bottom-0 inset-x-0 p-8 bg-gradient-to-t from-black/80 via-black/40 to-transparent pointer-events-none"
-          >
-            <div class="text-white font-bold mb-2">@云优官方节点</div>
-            <div class="text-xs text-white/70 line-clamp-2">
-              当前线路：{{
-                currentType.name
-              }}。如果播放缓慢，请尝试点击右上角刷新。
-            </div>
-          </div>
 
           <div
             v-if="!isPlaying && !isLoading && !loadError"

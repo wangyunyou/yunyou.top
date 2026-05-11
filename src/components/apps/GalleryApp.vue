@@ -48,6 +48,18 @@ const refreshImage = () => {
   };
 };
 
+const downloadImage = () => {
+  if (!imageSrc.value) return;
+  // Create a temporary link to trigger download
+  const link = document.createElement('a');
+  link.href = imageSrc.value;
+  link.download = `yunyou-pic-${Date.now()}.jpg`;
+  link.target = '_blank'; // Fallback for some browsers
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
+
 const selectSource = (source) => {
   currentSource.value = source;
   refreshImage();
@@ -154,8 +166,10 @@ onMounted(() => {
           >
             <Heart class="w-5 h-5" />
           </button>
-          <button
+          <button 
+            @click="downloadImage"
             class="p-3 bg-white/10 backdrop-blur-xl rounded-full text-white hover:bg-blue-500 transition-colors shadow-2xl border border-white/10"
+            title="下载原图"
           >
             <Download class="w-5 h-5" />
           </button>

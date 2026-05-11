@@ -14,9 +14,20 @@ const deviceMemory = navigator.deviceMemory || '未知';
 const updateData = async () => {
   // 1. Real Memory (JS Heap)
   if (window.performance && performance.memory) {
-    memUsed.value = (performance.memory.usedJSHeapSize / 1048576).toFixed(1);
-    memLimit.value = (performance.memory.jsHeapLimit / 1048576).toFixed(1);
-    memLoad.value = (performance.memory.usedJSHeapSize / performance.memory.jsHeapLimit) * 100;
+    const used = performance.memory.usedJSHeapSize || 0;
+    const limit = performance.memory.jsHeapLimit || 0;
+    
+    memUsed.value = (used / 1048576).toFixed(1);
+    memLimit.value = (limit / 1048576).toFixed(1);
+    
+    if (limit > 0) {
+      memLoad.value = (used / limit) * 100;
+    } else {
+      memLoad.value = 0;
+    }
+  } else {
+    // If not supported, set to null or a flag
+    memUsed.value = null;
   }
 
   // 2. Real Network (Downlink)
@@ -84,25 +95,33 @@ onUnmounted(() => {
             <MemoryStick class="w-5 h-5 text-purple-400" />
             <span class="font-bold">JS 堆栈内存占用 (Heap)</span>
           </div>
-          <span class="text-2xl font-mono font-bold text-purple-400">{{ memLoad.toFixed(2) }}%</span>
+          <span v-if="memUsed !== null" class="text-2xl font-mono font-bold text-purple-400">{{ (memLoad || 0).toFixed(2) }}%</span>
+          <span v-else class="text-sm font-bold text-slate-500 uppercase">不支持此 API</span>
         </div>
         
         <div class="w-full bg-white/5 h-3 rounded-full overflow-hidden mb-4 p-0.5 border border-white/5">
           <div 
             class="h-full bg-gradient-to-r from-purple-600 to-purple-400 rounded-full transition-all duration-1000 shadow-[0_0_15px_rgba(168,85,247,0.5)]" 
-            :style="{ width: `${memLoad}%` }"
+            :style="{ width: `${memLoad || 0}%` }"
           ></div>
         </div>
         
         <div class="flex justify-between items-end">
           <div class="space-y-1">
              <div class="text-[10px] text-slate-500 uppercase">已分配资源</div>
-             <div class="text-lg font-mono font-bold text-white">{{ memUsed }} <span class="text-xs text-slate-500">MB</span></div>
+             <div class="text-lg font-mono font-bold text-white">{{ memUsed || '--' }} <span class="text-xs text-slate-500">MB</span></div>
           </div>
           <div class="text-right space-y-1">
              <div class="text-[10px] text-slate-500 uppercase">环境上限</div>
-             <div class="text-lg font-mono font-bold text-white">{{ memLimit }} <span class="text-xs text-slate-500">MB</span></div>
+             <div class="text-lg font-mono font-bold text-white">{{ memLimit || '--' }} <span class="text-xs text-slate-500">MB</span></div>
           </div>
+        </div>
+
+        <!-- Overly for Unsupported -->
+        <div v-if="memUsed === null" class="absolute inset-0 bg-slate-900/60 backdrop-blur-[2px] flex items-center justify-center p-6 text-center z-20">
+          <p class="text-[10px] text-slate-400 leading-relaxed font-medium uppercase tracking-widest">
+            当前浏览器（如 Safari/Firefox）<br>暂不支持实时内存采样
+          </p>
         </div>
       </div>
 

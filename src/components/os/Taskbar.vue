@@ -76,14 +76,6 @@ const handleTaskbarClick = (win) => {
 
     <!-- System Tray -->
     <div class="flex items-center gap-6">
-      <!-- Hacker Mode Toggle -->
-      <button 
-        @click="$emit('toggle-hacker')"
-        class="flex items-center gap-2 px-4 py-1.5 rounded-lg bg-sky-500/10 border border-sky-500/20 hover:bg-sky-500/20 hover:border-sky-500/40 transition-all duration-300 group"
-      >
-        <Radio class="w-4 h-4 text-sky-400 animate-pulse" />
-        <span class="text-[10px] font-bold text-sky-400 group-hover:text-sky-300 transition-colors uppercase tracking-widest">电影模式</span>
-      </button>
 
       <div class="flex items-center gap-4 text-slate-200 text-xs font-mono tracking-tighter">
         <span>{{ time }}</span>

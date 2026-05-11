@@ -7,14 +7,10 @@ import { User, Terminal, Briefcase, Settings, Activity, MessagesSquare, Music, G
 import ContextMenu from './ContextMenu.vue';
 
 // Import Apps
-import AboutApp from '../apps/AboutApp.vue';
-import ProjectsApp from '../apps/ProjectsApp.vue';
-import TerminalApp from '../apps/TerminalApp.vue';
 import SettingsApp from '../apps/SettingsApp.vue';
 import SystemMonitorApp from '../apps/SystemMonitorApp.vue';
 import ChatApp from '../apps/ChatApp.vue';
 import MusicApp from '../apps/MusicApp.vue';
-import SnakeGameApp from '../apps/SnakeGameApp.vue';
 import VideoApp from '../apps/VideoApp.vue';
 import GalleryApp from '../apps/GalleryApp.vue';
 import { markRaw, onMounted, ref } from 'vue';
@@ -24,14 +20,10 @@ const configStore = useConfigStore();
 
 // Map strings to components
 const appMap = {
-  AboutApp: markRaw(AboutApp),
-  ProjectsApp: markRaw(ProjectsApp),
-  TerminalApp: markRaw(TerminalApp),
   SettingsApp: markRaw(SettingsApp),
   SystemMonitorApp: markRaw(SystemMonitorApp),
   ChatApp: markRaw(ChatApp),
   MusicApp: markRaw(MusicApp),
-  SnakeGameApp: markRaw(SnakeGameApp),
   VideoApp: markRaw(VideoApp),
   GalleryApp: markRaw(GalleryApp),
 };
@@ -64,9 +56,6 @@ const handleMenuAction = (id) => {
       break;
     case 'monitor':
       openApp('monitor', '系统监视器', 'SystemMonitorApp');
-      break;
-    case 'about':
-      openApp('about', '关于我', 'AboutApp');
       break;
     case 'github':
       window.open('https://github.com/wangyunyou', '_blank');
@@ -118,21 +107,6 @@ const handleMenuAction = (id) => {
 
       <!-- Secondary Apps -->
       <DesktopIcon
-        label="关于我"
-        :icon-component="User"
-        @click="openApp('about', '关于我', 'AboutApp')"
-      />
-      <DesktopIcon
-        label="我的项目"
-        :icon-component="Briefcase"
-        @click="openApp('projects', '我的项目', 'ProjectsApp')"
-      />
-      <DesktopIcon
-        label="终端"
-        :icon-component="Terminal"
-        @click="openApp('terminal', '系统终端', 'TerminalApp')"
-      />
-      <DesktopIcon
         label="系统监控"
         :icon-component="Activity"
         @click="openApp('monitor', '系统监视器', 'SystemMonitorApp')"
@@ -146,11 +120,6 @@ const handleMenuAction = (id) => {
         label="云优音乐"
         :icon-component="Music"
         @click="openApp('music', '云优音乐', 'MusicApp')"
-      />
-      <DesktopIcon
-        label="贪吃蛇"
-        :icon-component="Gamepad2"
-        @click="openApp('snake', '贪吃蛇大作战', 'SnakeGameApp')"
       />
     </div>
 
