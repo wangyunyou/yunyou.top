@@ -9,12 +9,13 @@ import AboutApp from '@/components/apps/AboutApp.vue';
 import ProjectsApp from '@/components/apps/ProjectsApp.vue';
 import TerminalApp from '@/components/apps/TerminalApp.vue';
 import SettingsApp from '@/components/apps/SettingsApp.vue';
+import SystemMonitorApp from '@/components/apps/SystemMonitorApp.vue';
 import { markRaw } from 'vue';
 
 const windowStore = useWindowStore();
 
 const backgroundUrl =
-  'https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?q=80&w=2874&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
+  'https://images.unsplash.com/photo-1635776062127-d379bfcba9f8?q=80&w=3132&auto=format&fit=crop';
 
 // Map strings to components
 const appMap = {
@@ -22,6 +23,7 @@ const appMap = {
   ProjectsApp: markRaw(ProjectsApp),
   TerminalApp: markRaw(TerminalApp),
   SettingsApp: markRaw(SettingsApp),
+  SystemMonitorApp: markRaw(SystemMonitorApp),
 };
 
 const openApp = (id, title, componentName) => {
@@ -38,9 +40,12 @@ const openApp = (id, title, componentName) => {
     :style="{ backgroundImage: `url(${backgroundUrl})` }"
     @click.self="windowStore.activeWindowId = null"
   >
+    <!-- Background Overlay for Depth -->
+    <div class="absolute inset-0 bg-slate-900/10 backdrop-brightness-75 pointer-events-none"></div>
+
     <!-- Desktop Icons Grid -->
     <div
-      class="grid grid-flow-col grid-rows-[repeat(auto-fill,100px)] gap-4 p-4 absolute top-0 left-0 bottom-12 w-fit z-0"
+      class="grid grid-flow-col grid-rows-[repeat(auto-fill,100px)] gap-6 p-8 absolute top-0 left-0 bottom-12 w-fit z-0"
     >
       <DesktopIcon
         label="About Me"
@@ -56,6 +61,11 @@ const openApp = (id, title, componentName) => {
         label="Terminal"
         :icon-component="Terminal"
         @dblclick="openApp('terminal', 'Terminal', 'TerminalApp')"
+      />
+      <DesktopIcon
+        label="System"
+        :icon-component="Activity"
+        @dblclick="openApp('monitor', 'System Monitor', 'SystemMonitorApp')"
       />
       <DesktopIcon
         label="Settings"
