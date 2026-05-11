@@ -185,21 +185,17 @@ const clearChat = () => {
               ? 'bg-slate-900/80 border-white/5 text-slate-200 rounded-tl-none' 
               : 'bg-indigo-600 border-indigo-500 text-white rounded-tr-none'
           ]"
-          v-html="renderContent(msg.content)"
         >
+          <!-- Assistant Loading State -->
+          <div v-if="msg.role === 'assistant' && !msg.content && isTyping" class="flex items-center gap-2 py-1">
+            <Loader2 class="w-4 h-4 animate-spin text-indigo-400" />
+            <span class="text-xs text-slate-400 italic">正在思考中...</span>
+          </div>
+          <!-- Assistant Content or User Content -->
+          <div v-else v-html="renderContent(msg.content)"></div>
         </div>
       </div>
 
-      <!-- Loading State -->
-      <div v-if="isTyping" class="flex gap-4 max-w-3xl mx-auto">
-        <div class="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center shrink-0 animate-pulse">
-          <Bot class="w-5 h-5" />
-        </div>
-        <div class="px-4 py-3 bg-slate-900/80 border border-white/5 rounded-2xl rounded-tl-none flex items-center gap-2">
-          <Loader2 class="w-4 h-4 animate-spin text-indigo-400" />
-          <span class="text-xs text-slate-400 italic">正在思考中...</span>
-        </div>
-      </div>
 
     </div>
 
