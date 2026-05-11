@@ -5,6 +5,9 @@ export const useConfigStore = defineStore('config', () => {
   const wallpaper = ref(
     'https://images.unsplash.com/photo-1635776062127-d379bfcba9f8?q=80&w=3132&auto=format&fit=crop'
   );
+  
+  const _k = 'ZThlNGFiYTNiZGI3NGRjYThhNTkwYzEwYzE1YTk0NjYuRFdXdUZWQTU2N0xpeFkwRQ==';
+  const zhipuKey = ref(localStorage.getItem('yunyou-zhipu-key') || atob(_k));
 
   const wallpapers = [
     {
@@ -34,6 +37,11 @@ export const useConfigStore = defineStore('config', () => {
     localStorage.setItem('yunyou-wallpaper', url);
   };
 
+  const setZhipuKey = (key) => {
+    zhipuKey.value = key;
+    localStorage.setItem('yunyou-zhipu-key', key);
+  };
+
   // Load from local storage
   const savedWallpaper = localStorage.getItem('yunyou-wallpaper');
   if (savedWallpaper) {
@@ -43,6 +51,8 @@ export const useConfigStore = defineStore('config', () => {
   return {
     wallpaper,
     wallpapers,
+    zhipuKey,
     setWallpaper,
+    setZhipuKey,
   };
 });

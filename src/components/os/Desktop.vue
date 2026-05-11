@@ -14,6 +14,7 @@ import {
   Gamepad2,
   Film,
   Image as ImageIcon,
+  Sparkles,
 } from 'lucide-vue-next';
 import ContextMenu from './ContextMenu.vue';
 
@@ -24,6 +25,7 @@ import ChatApp from '../apps/ChatApp.vue';
 import MusicApp from '../apps/MusicApp.vue';
 import VideoApp from '../apps/VideoApp.vue';
 import GalleryApp from '../apps/GalleryApp.vue';
+import AIApp from '../apps/AIApp.vue';
 import { markRaw, onMounted, ref } from 'vue';
 
 const windowStore = useWindowStore();
@@ -37,6 +39,7 @@ const appMap = {
   MusicApp: markRaw(MusicApp),
   VideoApp: markRaw(VideoApp),
   GalleryApp: markRaw(GalleryApp),
+  AIApp: markRaw(AIApp),
 };
 
 const openApp = (id, title, componentName) => {
@@ -96,6 +99,11 @@ const handleMenuAction = (id) => {
         label="匿名聊天"
         :icon-component="MessagesSquare"
         @click="openApp('chat', '匿名聊天室', 'ChatApp')"
+      />
+      <DesktopIcon
+        label="云优 AI"
+        :icon-component="Sparkles"
+        @click="openApp('ai', '云优 AI 助手', 'AIApp')"
       />
       <DesktopIcon
         label="云优短视频"
