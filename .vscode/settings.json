@@ -1,0 +1,6 @@
+{
+  "terminal.integrated.env.osx": {
+    "PATH": "/Users/wangyunyou/.nvm/versions/node/v22.22.0/bin:${env:PATH}"
+  },
+  "node.debug.runtimeExecutable": "/Users/wangyunyou/.nvm/versions/node/v22.22.0/bin/node"
+}
