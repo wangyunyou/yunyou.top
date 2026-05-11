@@ -16,23 +16,18 @@ const history = ref([]);
 
 const sources = [
   { name: '云优精选', api: 'https://api.yujn.cn/api/heisi.php?' },
-  {
-    name: '次元壁纸',
-    api: 'https://api.btstu.cn/sjbz/api.php?method=mobile&lx=dongman&',
-  },
-  {
-    name: '风景艺术',
-    api: 'https://api.btstu.cn/sjbz/api.php?method=mobile&lx=fengjing&',
-  },
+  { name: '次元壁纸', api: 'https://api.btstu.cn/sjbz/api.php?method=mobile&lx=dongman&' },
+  { name: '风景艺术', api: 'https://api.btstu.cn/sjbz/api.php?method=mobile&lx=fengjing&' },
+  { name: '高清自然', api: 'https://picsum.photos/1080/1920?' },
 ];
 
 const currentSource = ref(sources[0]);
 
-const refreshImage = () => {
+const refreshImage = (retryCount = 0) => {
   isLoading.value = true;
   const timestamp = new Date().getTime();
   const api = currentSource.value.api;
-  const newSrc = `${api}_t=${timestamp}`;
+  const newSrc = api.includes('?') ? `${api}t=${timestamp}` : `${api}?t=${timestamp}`;
 
   const img = new Image();
   img.src = newSrc;
@@ -43,8 +38,14 @@ const refreshImage = () => {
     if (history.value.length > 20) history.value.pop();
   };
   img.onerror = () => {
-    isLoading.value = false;
-    // Fallback or alert
+    if (retryCount < 2) {
+      // Automatic retry once
+      setTimeout(() => refreshImage(retryCount + 1), 500);
+    } else {
+      isLoading.value = false;
+      // If primary fails, try a very reliable fallback
+      imageSrc.value = `https://picsum.photos/1080/1920?sig=${timestamp}`;
+    }
   };
 };
 

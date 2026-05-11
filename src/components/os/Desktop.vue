@@ -27,6 +27,7 @@ import MusicApp from '../apps/MusicApp.vue';
 import VideoApp from '../apps/VideoApp.vue';
 import GalleryApp from '../apps/GalleryApp.vue';
 import AIApp from '../apps/AIApp.vue';
+import GameCenterApp from '../apps/GameCenterApp.vue';
 import { ref, onMounted, onUnmounted, markRaw } from 'vue';
 import { Cloud, Sun, CloudRain, Clock } from 'lucide-vue-next';
 
@@ -42,6 +43,7 @@ const appMap = {
   VideoApp: markRaw(VideoApp),
   GalleryApp: markRaw(GalleryApp),
   AIApp: markRaw(AIApp),
+  GameCenterApp: markRaw(GameCenterApp),
 };
 
 const openApp = (id, title, componentName) => {
@@ -137,6 +139,11 @@ const handleMenuAction = (id) => {
         label="云优相册"
         :icon-component="ImageIcon"
         @click="openApp('gallery', '云优相册', 'GalleryApp')"
+      />
+      <DesktopIcon
+        label="游戏厅"
+        :icon-component="Gamepad2"
+        @click="openApp('game', '云优游戏厅', 'GameCenterApp')"
       />
 
       <!-- Context Menu -->
