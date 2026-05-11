@@ -3,7 +3,7 @@ import { computed } from 'vue';
 
 const props = defineProps({
   label: String,
-  iconComponent: Object,
+  iconComponent: [Object, Function],
 });
 
 const emit = defineEmits(['dblclick']);
