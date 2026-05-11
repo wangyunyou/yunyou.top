@@ -64,13 +64,33 @@ const quotes = [
 ];
 const dailyQuote = ref(quotes[Math.floor(Math.random() * quotes.length)]);
 
+const mouseX = ref(0);
+const mouseY = ref(0);
+const isGravityActive = ref(false);
+const isMobile = ref(false);
+
+const checkMobile = () => {
+  isMobile.value = window.innerWidth < 768;
+};
+
+const handleMouseMove = (e) => {
+  if (isMobile.value) return; // Disable parallax on mobile
+  mouseX.value = (e.clientX / window.innerWidth) * 2 - 1;
+  mouseY.value = (e.clientY / window.innerHeight) * 2 - 1;
+};
+
 onMounted(() => {
+  checkMobile();
+  window.addEventListener('resize', checkMobile);
+  window.addEventListener('mousemove', handleMouseMove);
   timer.value = setInterval(() => {
     currentTime.value = new Date();
   }, 1000);
 });
 
 onUnmounted(() => {
+  window.removeEventListener('resize', checkMobile);
+  window.removeEventListener('mousemove', handleMouseMove);
   if (timer.value) clearInterval(timer.value);
 });
 
@@ -115,10 +135,25 @@ const handleMenuAction = (id) => {
       class="absolute inset-0 bg-slate-900/10 backdrop-brightness-75 pointer-events-none"
     ></div>
 
-    <!-- Desktop Icons Grid -->
-    <div
-      class="grid grid-flow-col grid-rows-[repeat(auto-fill,100px)] gap-6 p-8 absolute top-0 left-0 bottom-12 w-fit z-10"
-    >
+    <!-- Main Desktop Content -->
+    <div class="h-full w-full relative z-10 flex flex-col overflow-y-auto overflow-x-hidden pt-safe pb-16">
+      
+      <!-- Mobile Top Section (Widgets in flow) -->
+      <div v-if="isMobile" class="p-6 flex flex-col items-center gap-4 text-center">
+        <div class="text-5xl font-light text-white tracking-tighter drop-shadow-lg">
+          {{ currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }) }}
+        </div>
+        <div class="max-w-[280px] p-4 bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10">
+          <p class="text-[10px] text-white/70 italic">“{{ dailyQuote.text }}”</p>
+        </div>
+      </div>
+
+      <!-- Desktop Icons Grid -->
+      <div 
+        class="p-4 md:p-8 grid gap-4 md:gap-6 transition-all duration-500"
+        :class="isMobile ? 'grid-cols-4 content-start pb-20' : 'grid-cols-1 grid-rows-8 grid-flow-col w-fit h-full'"
+        :style="!isMobile ? { transform: `translate3d(${mouseX * 20}px, ${mouseY * 20}px, 0)` } : {}"
+      >
       <!-- Primary Apps (Reordered per user request) -->
       <DesktopIcon
         label="匿名聊天"
@@ -172,13 +207,16 @@ const handleMenuAction = (id) => {
         @click="openApp('music', '云优音乐', 'MusicApp')"
       />
     </div>
+    </div>
 
     <!-- Windows Layer -->
     <Window v-for="win in windowStore.windows" :key="win.id" :window="win" />
 
-    <!-- Desktop Widgets -->
-    <div
-      class="absolute top-12 right-12 flex flex-col gap-8 items-end pointer-events-none select-none"
+    <!-- Desktop Widgets (Floating for PC only) -->
+    <div 
+      v-if="!isMobile"
+      class="absolute top-12 right-12 flex flex-col gap-8 items-end pointer-events-none select-none transition-transform duration-100 ease-out"
+      :style="{ transform: `translate3d(${mouseX * 40}px, ${mouseY * 40}px, 0)` }"
     >
       <!-- Big Clock -->
       <div class="text-right group cursor-default pointer-events-auto">
@@ -191,7 +229,7 @@ const handleMenuAction = (id) => {
               minute: '2-digit',
               hour12: false,
             })
-          }}
+          }} 
         </div>
         <div
           class="text-sm text-white/60 font-medium tracking-widest mt-1 uppercase"

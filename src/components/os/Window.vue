@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useWindowStore } from '../../stores/windowStore';
 import { useDraggable } from '@vueuse/core';
 import { Minus, Square, X, Maximize2 } from 'lucide-vue-next';
@@ -14,7 +14,19 @@ const props = defineProps({
 const windowStore = useWindowStore();
 const windowRef = ref(null);
 const headerRef = ref(null);
-const resizerRef = ref(null);
+const isMobile = ref(typeof window !== 'undefined' ? window.innerWidth < 768 : false);
+
+const checkMobile = () => {
+  isMobile.value = window.innerWidth < 768;
+};
+
+onMounted(() => {
+  window.addEventListener('resize', checkMobile);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('resize', checkMobile);
+});
 
 // Window Position
 const { x, y } = useDraggable(windowRef, {
@@ -22,7 +34,7 @@ const { x, y } = useDraggable(windowRef, {
   preventDefault: true,
   handle: headerRef,
   onEnd: () => {
-    if (!props.window.isMaximized) {
+    if (!props.window.isMaximized && !isMobile.value) {
       windowStore.updateWindowPosition(props.window.id, x.value, y.value);
     }
   },
@@ -36,7 +48,7 @@ const height = ref(props.window.height);
 const isResizing = ref(false);
 
 const startResizing = (e) => {
-  if (props.window.isMaximized) return;
+  if (props.window.isMaximized || isMobile.value) return;
   isResizing.value = true;
   const startX = e.clientX;
   const startY = e.clientY;
@@ -80,14 +92,15 @@ const handleMouseDown = () => {
   <div
     ref="windowRef"
     v-show="!window.isMinimized"
-    class="absolute flex flex-col rounded-xl overflow-hidden shadow-2xl border select-none"
+    class="absolute flex flex-col overflow-hidden shadow-2xl border select-none"
     :class="[
       isActive 
         ? 'border-white/20 ring-1 ring-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-50' 
         : 'border-white/5 opacity-90 grayscale-[0.2]',
-      window.isMaximized ? 'rounded-none' : 'transition-[opacity,transform,border] duration-300 ease-out'
+      window.isMaximized || isMobile ? 'rounded-none' : 'rounded-xl transition-[opacity,transform,border] duration-300 ease-out',
+      isMobile ? '!fixed !top-0 !left-0 !w-full !h-full !m-0' : ''
     ]"
-    :style="{
+    :style="!isMobile ? {
       left: `${x}px`,
       top: `${y}px`,
       width: `${width}px`,
@@ -97,15 +110,18 @@ const handleMouseDown = () => {
         ? 'linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 0.95) 100%)' 
         : 'rgba(15, 23, 42, 0.8)',
       backdropFilter: 'blur(20px)',
+    } : {
+      zIndex: window.zIndex,
+      background: 'rgba(15, 23, 42, 0.95)',
     }"
     @mousedown="handleMouseDown"
   >
     <!-- Window Title Bar -->
     <div
       ref="headerRef"
-      class="h-10 flex items-center justify-between px-4 select-none cursor-default border-b border-white/5 active:cursor-grabbing"
-      :class="isActive ? 'bg-white/10' : 'bg-transparent text-slate-500'"
-      @dblclick="windowStore.toggleMaximize(window.id)"
+      class="h-10 flex items-center justify-between px-4 select-none cursor-default border-b border-white/5"
+      :class="[isActive ? 'bg-white/10' : 'bg-transparent text-slate-500', !isMobile ? 'active:cursor-grabbing' : '']"
+      @dblclick="!isMobile && windowStore.toggleMaximize(window.id)"
     >
       <div class="flex items-center gap-2 text-sm font-semibold tracking-wide" :class="isActive ? 'text-white' : 'text-slate-400'">
         <div class="w-2 h-2 rounded-full shadow-[0_0_8px_rgba(56,189,248,0.5)]" :class="isActive ? 'bg-sky-400' : 'bg-slate-600'"></div>
@@ -114,12 +130,14 @@ const handleMouseDown = () => {
 
       <div class="flex items-center gap-1">
         <button
+          v-if="!isMobile"
           @click.stop="windowStore.minimizeWindow(window.id)"
           class="w-8 h-8 flex items-center justify-center hover:bg-white/10 rounded-lg text-slate-400 hover:text-white transition-all"
         >
           <Minus class="w-4 h-4" />
         </button>
         <button
+          v-if="!isMobile"
           @click.stop="windowStore.toggleMaximize(window.id)"
           class="w-8 h-8 flex items-center justify-center hover:bg-white/10 rounded-lg text-slate-400 hover:text-white transition-all"
         >
@@ -142,7 +160,7 @@ const handleMouseDown = () => {
 
     <!-- Resize Handle -->
     <div 
-      v-if="!window.isMaximized"
+      v-if="!window.isMaximized && !isMobile"
       class="absolute bottom-0 right-0 w-4 h-4 cursor-nwse-resize group"
       @mousedown.stop.prevent="startResizing"
     >
