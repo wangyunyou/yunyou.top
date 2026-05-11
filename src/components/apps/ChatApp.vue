@@ -55,6 +55,17 @@ const sendMessage = async () => {
     console.error('Error sending message:', error);
     messages.value = messages.value.filter(m => m.id !== tempId);
     alert('发送失败，请检查 Supabase RLS 权限是否关闭！');
+  } else {
+    // 广播消息给其他在线用户 (双重保险)
+    subscription.send({
+      type: 'broadcast',
+      event: 'message',
+      payload: {
+        id: tempId,
+        username: username.value,
+        content: content
+      }
+    });
   }
 };
 
@@ -80,6 +91,23 @@ const subscribeToMessages = () => {
             user: newMsg.username,
             text: newMsg.content,
             type: 'me'
+          });
+          scrollToBottom();
+        }
+      }
+    })
+    // 监听广播消息 (更快的实时更新)
+    .on('broadcast', { event: 'message' }, payload => {
+      const data = payload.payload;
+      if (data.username !== username.value) {
+        // 检查是否已经存在该消息（避免和 postgres_changes 重复）
+        const exists = messages.value.find(m => m.text === data.content && m.user === data.username);
+        if (!exists) {
+          messages.value.push({
+            id: data.id,
+            user: data.username,
+            text: data.content,
+            type: 'other'
           });
           scrollToBottom();
         }
