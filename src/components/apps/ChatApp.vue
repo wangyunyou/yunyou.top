@@ -7,6 +7,7 @@ const messages = ref([]);
 const newMessage = ref('');
 const username = ref(`User-${Math.floor(Math.random() * 900) + 100}`);
 const chatContainer = ref(null);
+const onlineCount = ref(1); // 默认为1人
 let subscription = null;
 
 // 获取初始消息
@@ -35,7 +36,6 @@ const sendMessage = async () => {
   const content = newMessage.value;
   newMessage.value = '';
 
-  // 1. 先在本地显示（乐观更新）
   const tempId = Date.now();
   messages.value.push({
     id: tempId,
@@ -45,7 +45,6 @@ const sendMessage = async () => {
   });
   scrollToBottom();
 
-  // 2. 发送到数据库
   const { error } = await supabase
     .from('messages')
     .insert([
@@ -54,16 +53,16 @@ const sendMessage = async () => {
 
   if (error) {
     console.error('Error sending message:', error);
-    // 如果发送失败，可以把那条临时消息删掉或标红
     messages.value = messages.value.filter(m => m.id !== tempId);
     alert('发送失败，请检查 Supabase RLS 权限是否关闭！');
   }
 };
 
-// 订阅实时更新
+// 订阅实时更新 & 在线人数
 const subscribeToMessages = () => {
-  subscription = supabase
-    .channel('public:messages')
+  subscription = supabase.channel('public:messages');
+
+  subscription
     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
       const newMsg = payload.new;
       if (newMsg.username !== username.value) {
@@ -86,7 +85,21 @@ const subscribeToMessages = () => {
         }
       }
     })
-    .subscribe();
+    // 监听在线人数变化
+    .on('presence', { event: 'sync' }, () => {
+      const newState = subscription.presenceState();
+      // 获取唯一的在线用户数量
+      onlineCount.value = Object.keys(newState).length;
+    })
+    .subscribe(async (status) => {
+      if (status === 'SUBSCRIBED') {
+        // 加入并在状态里登记自己
+        await subscription.track({
+          user: username.value,
+          online_at: new Date().toISOString(),
+        });
+      }
+    });
 };
 
 const scrollToBottom = async () => {
@@ -116,12 +129,12 @@ onUnmounted(() => {
           <Hash class="w-5 h-5" />
         </div>
         <div>
-          <h3 class="font-bold text-sm"># LOBBY_GENERAL</h3>
-          <p class="text-[10px] text-slate-400 uppercase tracking-widest">Public Anonymous Channel</p>
+          <h3 class="font-bold text-sm"># 公共聊天室</h3>
+          <p class="text-[10px] text-slate-400 uppercase tracking-widest">匿名交流频道</p>
         </div>
       </div>
       <div class="flex items-center gap-4 text-xs text-slate-400">
-        <span class="flex items-center gap-1"><Users class="w-3.5 h-3.5" /> 12 Online</span>
+        <span class="flex items-center gap-1"><Users class="w-3.5 h-3.5" /> {{ onlineCount }} 人在线</span>
       </div>
     </div>
 
@@ -182,7 +195,7 @@ onUnmounted(() => {
         </button>
       </form>
       <div class="mt-2 text-[9px] text-slate-500 text-center">
-        Your Identity: <span class="text-sky-500 font-mono">{{ username }}</span> (Local Only for now)
+        当前身份：<span class="text-sky-500 font-mono">{{ username }}</span>
       </div>
     </div>
   </div>

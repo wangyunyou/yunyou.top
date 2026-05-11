@@ -14,6 +14,12 @@ const commands = [
   'RELAYING THROUGH PROXY: BERLIN-01',
 ];
 
+const stats = ref([
+  { label: 'CPU 使用率', value: 45 },
+  { label: '内存占用', value: 68 },
+  { label: '网络吞吐', value: 12 },
+]);
+
 const nodes = ref(Array(12).fill(0).map(() => ({
   x: Math.random() * 100,
   y: Math.random() * 100,
@@ -101,15 +107,15 @@ onUnmounted(() => {
         <!-- System Stats -->
         <div class="h-48 border border-emerald-900/30 bg-emerald-950/10 rounded-xl p-4 flex flex-col justify-between">
           <div class="flex items-center justify-between text-xs">
-            <span class="flex items-center gap-2"><Cpu class="w-3 h-3" /> CORE_TEMP</span>
+            <span class="flex items-center gap-2"><Cpu class="w-3 h-3" /> 核心温度</span>
             <span class="text-emerald-400">72°C</span>
           </div>
           <div class="flex items-center justify-between text-xs">
-            <span class="flex items-center gap-2"><Wifi class="w-3 h-3" /> UPLINK</span>
+            <span class="flex items-center gap-2"><Wifi class="w-3 h-3" /> 上行链路</span>
             <span class="text-emerald-400">8.2 GB/s</span>
           </div>
           <div class="flex items-center justify-between text-xs">
-            <span class="flex items-center gap-2"><Activity class="w-3 h-3" /> SYNC_ERR</span>
+            <span class="flex items-center gap-2"><Activity class="w-3 h-3" /> 同步误差</span>
             <span class="text-red-500 animate-pulse">0.003%</span>
           </div>
           <div class="h-12 flex items-end gap-0.5 mt-2 overflow-hidden">
@@ -127,15 +133,15 @@ onUnmounted(() => {
     <!-- Footer Controls -->
     <div class="mt-6 flex items-center justify-between text-[10px] border-t border-emerald-900/50 pt-4">
       <div class="flex gap-6 uppercase tracking-widest text-emerald-700">
-        <span>Sub-System: OK</span>
-        <span>Secure: True</span>
-        <span>Terminal: Ready</span>
+        <span>子系统：运行中</span>
+        <span>加密：已激活</span>
+        <span>终端：就绪</span>
       </div>
       <button 
         @click="$emit('exit')"
         class="px-6 py-2 border border-emerald-500/50 hover:bg-emerald-500/20 text-emerald-400 transition-all active:scale-95"
       >
-        TERMINATE SESSION (ESC)
+        终止会话 (ESC)
       </button>
     </div>
 

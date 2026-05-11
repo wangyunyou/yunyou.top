@@ -11,7 +11,7 @@ import TerminalApp from '../apps/TerminalApp.vue';
 import SettingsApp from '../apps/SettingsApp.vue';
 import SystemMonitorApp from '../apps/SystemMonitorApp.vue';
 import ChatApp from '../apps/ChatApp.vue';
-import { markRaw } from 'vue';
+import { markRaw, onMounted } from 'vue';
 
 const windowStore = useWindowStore();
 
@@ -34,6 +34,13 @@ const openApp = (id, title, componentName) => {
     windowStore.openWindow(id, title, comp);
   }
 };
+
+// 自动打开聊天窗口
+onMounted(() => {
+  setTimeout(() => {
+    openApp('chat', '匿名聊天室', 'ChatApp');
+  }, 1000); // 延迟1秒打开，增加一点“启动感”
+});
 </script>
 
 <template>
@@ -50,34 +57,34 @@ const openApp = (id, title, componentName) => {
       class="grid grid-flow-col grid-rows-[repeat(auto-fill,100px)] gap-6 p-8 absolute top-0 left-0 bottom-12 w-fit z-10"
     >
       <DesktopIcon
-        label="About Me"
+        label="关于我"
         :icon-component="User"
-        @click="openApp('about', 'About Me', 'AboutApp')"
+        @click="openApp('about', '关于我', 'AboutApp')"
       />
       <DesktopIcon
-        label="Projects"
+        label="我的项目"
         :icon-component="Briefcase"
-        @click="openApp('projects', 'Projects', 'ProjectsApp')"
+        @click="openApp('projects', '我的项目', 'ProjectsApp')"
       />
       <DesktopIcon
-        label="Terminal"
+        label="终端"
         :icon-component="Terminal"
-        @click="openApp('terminal', 'Terminal', 'TerminalApp')"
+        @click="openApp('terminal', '系统终端', 'TerminalApp')"
       />
       <DesktopIcon
-        label="Chat"
+        label="匿名聊天"
         :icon-component="MessagesSquare"
-        @click="openApp('chat', 'Anonymous Chat', 'ChatApp')"
+        @click="openApp('chat', '匿名聊天室', 'ChatApp')"
       />
       <DesktopIcon
-        label="System"
+        label="系统监控"
         :icon-component="Activity"
-        @click="openApp('monitor', 'System Monitor', 'SystemMonitorApp')"
+        @click="openApp('monitor', '系统监视器', 'SystemMonitorApp')"
       />
       <DesktopIcon
-        label="Settings"
+        label="设置中心"
         :icon-component="Settings"
-        @click="openApp('settings', 'Settings', 'SettingsApp')"
+        @click="openApp('settings', '系统设置', 'SettingsApp')"
       />
     </div>
 
