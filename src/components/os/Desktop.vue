@@ -4,6 +4,7 @@ import { useConfigStore } from '../../stores/configStore';
 import DesktopIcon from './DesktopIcon.vue';
 import Window from './Window.vue';
 import { User, Terminal, Briefcase, Settings, Activity, MessagesSquare, Music, Gamepad2, Film, Image as ImageIcon } from 'lucide-vue-next';
+import ContextMenu from './ContextMenu.vue';
 
 // Import Apps
 import AboutApp from '../apps/AboutApp.vue';
@@ -16,7 +17,7 @@ import MusicApp from '../apps/MusicApp.vue';
 import SnakeGameApp from '../apps/SnakeGameApp.vue';
 import VideoApp from '../apps/VideoApp.vue';
 import GalleryApp from '../apps/GalleryApp.vue';
-import { markRaw, onMounted } from 'vue';
+import { markRaw, onMounted, ref } from 'vue';
 
 const windowStore = useWindowStore();
 const configStore = useConfigStore();
@@ -42,6 +43,37 @@ const openApp = (id, title, componentName) => {
   }
 };
 
+// Context Menu State
+const showContextMenu = ref(false);
+const contextMenuPos = ref({ x: 0, y: 0 });
+
+const handleContextMenu = (e) => {
+  e.preventDefault();
+  contextMenuPos.value = { x: e.clientX, y: e.clientY };
+  showContextMenu.value = true;
+};
+
+const handleMenuAction = (id) => {
+  switch (id) {
+    case 'refresh':
+      window.location.reload();
+      break;
+    case 'wallpaper':
+    case 'settings':
+      openApp('settings', '系统设置', 'SettingsApp');
+      break;
+    case 'monitor':
+      openApp('monitor', '系统监视器', 'SystemMonitorApp');
+      break;
+    case 'about':
+      openApp('about', '关于我', 'AboutApp');
+      break;
+    case 'github':
+      window.open('https://github.com/wangyunyou', '_blank');
+      break;
+  }
+};
+
 </script>
 
 <template>
@@ -49,6 +81,7 @@ const openApp = (id, title, componentName) => {
     class="desktop h-screen w-screen relative overflow-hidden bg-cover bg-center select-none"
     :style="{ backgroundImage: `url(${configStore.wallpaper})` }"
     @click.self="windowStore.activeWindowId = null"
+    @contextmenu="handleContextMenu"
   >
     <!-- Background Overlay for Depth -->
     <div class="absolute inset-0 bg-slate-900/10 backdrop-brightness-75 pointer-events-none"></div>
@@ -72,6 +105,15 @@ const openApp = (id, title, componentName) => {
         label="云优相册"
         :icon-component="ImageIcon"
         @click="openApp('gallery', '云优相册', 'GalleryApp')"
+      />
+
+      <!-- Context Menu -->
+      <ContextMenu 
+        :x="contextMenuPos.x" 
+        :y="contextMenuPos.y" 
+        :visible="showContextMenu" 
+        @close="showContextMenu = false"
+        @action="handleMenuAction"
       />
 
       <!-- Secondary Apps -->
