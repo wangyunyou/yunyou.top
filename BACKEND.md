@@ -19,6 +19,18 @@
       content text,
       type text
     );
+
+    -- 必须执行以下步骤才能开启实时更新功能：
+    
+    -- 1. 开启 Realtime 实时监听 (非常重要！)
+    alter publication supabase_realtime add table messages;
+
+    -- 2. (可选) 启用 RLS 权限控制 (如果发现发不出消息)
+    alter table messages enable row level security;
+
+    -- 3. (可选) 允许任何人查看和发送消息
+    create policy "Allow anyone to select" on messages for select using (true);
+    create policy "Allow anyone to insert" on messages for insert with check (true);
     ```
 5.  **联系 Antigravity**：把 URL 和 Key 告诉我，我帮你完成最后一步的代码对接。
 

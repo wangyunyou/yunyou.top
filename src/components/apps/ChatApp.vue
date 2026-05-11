@@ -92,12 +92,15 @@ const subscribeToMessages = () => {
       onlineCount.value = Object.keys(newState).length;
     })
     .subscribe(async (status) => {
+      console.log('Supabase Subscription Status:', status);
       if (status === 'SUBSCRIBED') {
         // 加入并在状态里登记自己
         await subscription.track({
           user: username.value,
           online_at: new Date().toISOString(),
         });
+      } else if (status === 'CHANNEL_ERROR') {
+        console.error('Supabase Channel Error: Realtime might not be enabled for this table.');
       }
     });
 };
