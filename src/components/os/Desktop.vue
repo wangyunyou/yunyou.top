@@ -3,7 +3,7 @@ import { useWindowStore } from '../../stores/windowStore';
 import { useConfigStore } from '../../stores/configStore';
 import DesktopIcon from './DesktopIcon.vue';
 import Window from './Window.vue';
-import { User, Terminal, Briefcase, Settings, Activity, MessagesSquare, Music, Gamepad2 } from 'lucide-vue-next';
+import { User, Terminal, Briefcase, Settings, Activity, MessagesSquare, Music, Gamepad2, Film, Image as ImageIcon } from 'lucide-vue-next';
 
 // Import Apps
 import AboutApp from '../apps/AboutApp.vue';
@@ -14,6 +14,8 @@ import SystemMonitorApp from '../apps/SystemMonitorApp.vue';
 import ChatApp from '../apps/ChatApp.vue';
 import MusicApp from '../apps/MusicApp.vue';
 import SnakeGameApp from '../apps/SnakeGameApp.vue';
+import VideoApp from '../apps/VideoApp.vue';
+import GalleryApp from '../apps/GalleryApp.vue';
 import { markRaw, onMounted } from 'vue';
 
 const windowStore = useWindowStore();
@@ -29,6 +31,8 @@ const appMap = {
   ChatApp: markRaw(ChatApp),
   MusicApp: markRaw(MusicApp),
   SnakeGameApp: markRaw(SnakeGameApp),
+  VideoApp: markRaw(VideoApp),
+  GalleryApp: markRaw(GalleryApp),
 };
 
 const openApp = (id, title, componentName) => {
@@ -98,6 +102,16 @@ onMounted(() => {
         label="贪吃蛇"
         :icon-component="Gamepad2"
         @click="openApp('snake', '贪吃蛇大作战', 'SnakeGameApp')"
+      />
+      <DesktopIcon
+        label="云优短视频"
+        :icon-component="Film"
+        @click="openApp('video', '云优短视频', 'VideoApp')"
+      />
+      <DesktopIcon
+        label="云优相册"
+        :icon-component="ImageIcon"
+        @click="openApp('gallery', '云优相册', 'GalleryApp')"
       />
     </div>
 
