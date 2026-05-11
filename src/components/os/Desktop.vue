@@ -3,7 +3,18 @@ import { useWindowStore } from '../../stores/windowStore';
 import { useConfigStore } from '../../stores/configStore';
 import DesktopIcon from './DesktopIcon.vue';
 import Window from './Window.vue';
-import { User, Terminal, Briefcase, Settings, Activity, MessagesSquare, Music, Gamepad2, Film, Image as ImageIcon } from 'lucide-vue-next';
+import {
+  User,
+  Terminal,
+  Briefcase,
+  Settings,
+  Activity,
+  MessagesSquare,
+  Music,
+  Gamepad2,
+  Film,
+  Image as ImageIcon,
+} from 'lucide-vue-next';
 import ContextMenu from './ContextMenu.vue';
 
 // Import Apps
@@ -58,11 +69,10 @@ const handleMenuAction = (id) => {
       openApp('monitor', '系统监视器', 'SystemMonitorApp');
       break;
     case 'github':
-      window.open('https://github.com/wangyunyou', '_blank');
+      window.open('https://github.com/wangyunyou/yunyou.top', '_blank');
       break;
   }
 };
-
 </script>
 
 <template>
@@ -73,7 +83,9 @@ const handleMenuAction = (id) => {
     @contextmenu="handleContextMenu"
   >
     <!-- Background Overlay for Depth -->
-    <div class="absolute inset-0 bg-slate-900/10 backdrop-brightness-75 pointer-events-none"></div>
+    <div
+      class="absolute inset-0 bg-slate-900/10 backdrop-brightness-75 pointer-events-none"
+    ></div>
 
     <!-- Desktop Icons Grid -->
     <div
@@ -97,10 +109,10 @@ const handleMenuAction = (id) => {
       />
 
       <!-- Context Menu -->
-      <ContextMenu 
-        :x="contextMenuPos.x" 
-        :y="contextMenuPos.y" 
-        :visible="showContextMenu" 
+      <ContextMenu
+        :x="contextMenuPos.x"
+        :y="contextMenuPos.y"
+        :visible="showContextMenu"
         @close="showContextMenu = false"
         @action="handleMenuAction"
       />
