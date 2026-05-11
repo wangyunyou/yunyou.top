@@ -15,11 +15,12 @@ const fetchMessages = async () => {
   const { data, error } = await supabase
     .from('messages')
     .select('*')
-    .order('created_at', { ascending: true })
-    .limit(50);
+    .order('created_at', { ascending: false })
+    .limit(20);
   
   if (!error) {
-    messages.value = data.map(m => ({
+    const chronologicalData = [...data].reverse();
+    messages.value = chronologicalData.map(m => ({
       id: m.id,
       user: m.username,
       text: m.content,
