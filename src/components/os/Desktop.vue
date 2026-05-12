@@ -54,8 +54,6 @@ const openApp = (id, title, componentName) => {
 };
 
 // Widgets Logic
-const currentTime = ref(new Date());
-const timer = ref(null);
 const quotes = [
   { text: '不积跬步，无以至千里。', author: '荀子' },
   { text: 'Stay Hungry, Stay Foolish.', author: 'Steve Jobs' },
@@ -145,59 +143,59 @@ const handleMenuAction = (id) => {
         class="p-4 md:p-8 grid gap-4 md:gap-6 transition-all duration-500"
         :class="isMobile ? 'grid-cols-4 content-start pb-20' : 'grid-cols-1 grid-rows-8 grid-flow-col w-fit h-full'"
       >
-      <!-- Primary Apps (Reordered per user request) -->
-      <DesktopIcon
-        label="匿名聊天"
-        :icon-component="MessagesSquare"
-        @click="openApp('chat', '匿名聊天室', 'ChatApp')"
-      />
-      <DesktopIcon
-        label="云优 AI"
-        :icon-component="Sparkles"
-        @click="openApp('ai', '云优 AI 助手', 'AIApp')"
-      />
-      <DesktopIcon
-        label="云优短视频"
-        :icon-component="Film"
-        @click="openApp('video', '云优短视频', 'VideoApp')"
-      />
-      <DesktopIcon
-        label="云优相册"
-        :icon-component="ImageIcon"
-        @click="openApp('gallery', '云优相册', 'GalleryApp')"
-      />
-      <DesktopIcon
-        label="游戏厅"
-        :icon-component="Gamepad2"
-        @click="openApp('game', '云优游戏厅', 'GameCenterApp')"
-      />
+        <!-- Primary Apps (Reordered per user request) -->
+        <DesktopIcon
+          label="匿名聊天"
+          :icon-component="MessagesSquare"
+          @click="openApp('chat', '匿名聊天室', 'ChatApp')"
+        />
+        <DesktopIcon
+          label="云优 AI"
+          :icon-component="Sparkles"
+          @click="openApp('ai', '云优 AI 助手', 'AIApp')"
+        />
+        <DesktopIcon
+          label="云优短视频"
+          :icon-component="Film"
+          @click="openApp('video', '云优短视频', 'VideoApp')"
+        />
+        <DesktopIcon
+          label="云优相册"
+          :icon-component="ImageIcon"
+          @click="openApp('gallery', '云优相册', 'GalleryApp')"
+        />
+        <DesktopIcon
+          label="游戏厅"
+          :icon-component="Gamepad2"
+          @click="openApp('game', '云优游戏厅', 'GameCenterApp')"
+        />
 
-      <!-- Context Menu -->
-      <ContextMenu
-        :x="contextMenuPos.x"
-        :y="contextMenuPos.y"
-        :visible="showContextMenu"
-        @close="showContextMenu = false"
-        @action="handleMenuAction"
-      />
+        <!-- Context Menu -->
+        <ContextMenu
+          :x="contextMenuPos.x"
+          :y="contextMenuPos.y"
+          :visible="showContextMenu"
+          @close="showContextMenu = false"
+          @action="handleMenuAction"
+        />
 
-      <!-- Secondary Apps -->
-      <DesktopIcon
-        label="系统监控"
-        :icon-component="Activity"
-        @click="openApp('monitor', '系统监视器', 'SystemMonitorApp')"
-      />
-      <DesktopIcon
-        label="设置中心"
-        :icon-component="Settings"
-        @click="openApp('settings', '系统设置', 'SettingsApp')"
-      />
-      <DesktopIcon
-        label="云优音乐"
-        :icon-component="Music"
-        @click="openApp('music', '云优音乐', 'MusicApp')"
-      />
-    </div>
+        <!-- Secondary Apps -->
+        <DesktopIcon
+          label="系统监控"
+          :icon-component="Activity"
+          @click="openApp('monitor', '系统监视器', 'SystemMonitorApp')"
+        />
+        <DesktopIcon
+          label="设置中心"
+          :icon-component="Settings"
+          @click="openApp('settings', '系统设置', 'SettingsApp')"
+        />
+        <DesktopIcon
+          label="云优音乐"
+          :icon-component="Music"
+          @click="openApp('music', '云优音乐', 'MusicApp')"
+        />
+      </div>
     </div>
 
     <!-- Windows Layer -->
@@ -219,7 +217,7 @@ const handleMenuAction = (id) => {
               minute: '2-digit',
               hour12: false,
             })
-          }} 
+          }}
         </div>
         <div
           class="text-sm text-white/60 font-medium tracking-widest mt-1 uppercase"
@@ -255,17 +253,11 @@ const handleMenuAction = (id) => {
 .desktop {
   user-select: none;
 }
-
 .animate-spin-slow {
   animation: spin 12s linear infinite;
 }
-
 @keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 </style>
