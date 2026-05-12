@@ -64,8 +64,8 @@ const quotes = [
 ];
 const dailyQuote = ref(quotes[Math.floor(Math.random() * quotes.length)]);
 
-const mouseX = ref(0);
-const mouseY = ref(0);
+const currentTime = ref(new Date());
+const timer = ref(null);
 const isGravityActive = ref(false);
 const isMobile = ref(false);
 
@@ -73,16 +73,9 @@ const checkMobile = () => {
   isMobile.value = window.innerWidth < 768;
 };
 
-const handleMouseMove = (e) => {
-  if (isMobile.value) return; // Disable parallax on mobile
-  mouseX.value = (e.clientX / window.innerWidth) * 2 - 1;
-  mouseY.value = (e.clientY / window.innerHeight) * 2 - 1;
-};
-
 onMounted(() => {
   checkMobile();
   window.addEventListener('resize', checkMobile);
-  window.addEventListener('mousemove', handleMouseMove);
   timer.value = setInterval(() => {
     currentTime.value = new Date();
   }, 1000);
@@ -90,7 +83,6 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('resize', checkMobile);
-  window.removeEventListener('mousemove', handleMouseMove);
   if (timer.value) clearInterval(timer.value);
 });
 
@@ -152,7 +144,6 @@ const handleMenuAction = (id) => {
       <div 
         class="p-4 md:p-8 grid gap-4 md:gap-6 transition-all duration-500"
         :class="isMobile ? 'grid-cols-4 content-start pb-20' : 'grid-cols-1 grid-rows-8 grid-flow-col w-fit h-full'"
-        :style="!isMobile ? { transform: `translate3d(${mouseX * 20}px, ${mouseY * 20}px, 0)` } : {}"
       >
       <!-- Primary Apps (Reordered per user request) -->
       <DesktopIcon
@@ -216,7 +207,6 @@ const handleMenuAction = (id) => {
     <div 
       v-if="!isMobile"
       class="absolute top-12 right-12 flex flex-col gap-8 items-end pointer-events-none select-none transition-transform duration-100 ease-out"
-      :style="{ transform: `translate3d(${mouseX * 40}px, ${mouseY * 40}px, 0)` }"
     >
       <!-- Big Clock -->
       <div class="text-right group cursor-default pointer-events-auto">
