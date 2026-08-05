@@ -496,8 +496,10 @@ const exportHTML = () => {
   const a = document.createElement('a');
   a.href = url;
   a.download = 'landing-page.html';
+  document.body.appendChild(a);
   a.click();
-  URL.revokeObjectURL(url);
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 };
 
 const copyCode = async () => {

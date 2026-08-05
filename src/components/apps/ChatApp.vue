@@ -112,6 +112,8 @@ const sendMessage = async () => {
         content: content,
         createdAt
       }
+    }).catch(() => {
+      // 广播失败不影响主流程（postgres_changes 会兜底）
     });
   }
   isSending.value = false;

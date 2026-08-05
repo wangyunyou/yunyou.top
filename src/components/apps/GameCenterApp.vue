@@ -13,8 +13,8 @@ const bestTetris = ref(parseInt(localStorage.getItem('tetris-best') || '0'));
 // --- Responsive Game Sizes ---
 const snakeCellSize = ref(20);
 const board2048Size = ref(320);
-const tile2048Step = computed(() => Math.floor((board2048Size.value - 8) / 4));
-const tile2048Size = computed(() => tile2048Step.value - 4);
+const tile2048Step = computed(() => Math.floor((board2048Size.value - 16 - 24) / 4));
+const tile2048Size = computed(() => tile2048Step.value - 8);
 
 const updateGameSizes = () => {
   const vw = window.innerWidth;
@@ -395,6 +395,9 @@ const handleKey = (e) => {
   }
 
   if (currentGame.value === 'snake') {
+    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+      e.preventDefault();
+    }
     switch (e.key) {
       case 'ArrowUp': if (direction.value.y === 0) direction.value = { x: 0, y: -1 }; break;
       case 'ArrowDown': if (direction.value.y === 0) direction.value = { x: 0, y: 1 }; break;

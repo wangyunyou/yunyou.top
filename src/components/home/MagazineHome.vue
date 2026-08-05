@@ -203,9 +203,16 @@ const smallCards = [
 
 const heroTags = ['CHAT', 'AI', 'VIDEO', 'GAME', 'MUSIC'];
 
+let isNavigating = false;
 const openApp = (app) => {
+  if (isNavigating) return;
   if (app.route) {
-    router.push(app.route);
+    isNavigating = true;
+    router.push(app.route).then(() => {
+      isNavigating = false;
+    }).catch(() => {
+      isNavigating = false;
+    });
     return;
   }
   if (app.href) {
@@ -649,6 +656,7 @@ const heroGlowStyle = computed(() => ({
 .tilt-card {
   transition: transform 0.15s ease-out;
   will-change: transform;
+  touch-action: manipulation;
 }
 
 /* ===== Card Surfaces ===== */
@@ -665,6 +673,19 @@ const heroGlowStyle = computed(() => ({
   border-color: rgba(255, 255, 255, 0.14);
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.06);
   transform: translateY(-4px);
+}
+
+/* Disable hover transforms on touch devices to prevent click issues */
+@media (hover: none) {
+  .app-card:hover,
+  .quote-card:hover {
+    transform: none;
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.14);
+  }
+  .tilt-card {
+    transform: none !important;
+  }
 }
 
 .quote-card {

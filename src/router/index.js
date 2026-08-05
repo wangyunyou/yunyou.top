@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from 'vue-router';
+import { createRouter, createWebHashHistory } from 'vue-router';
 import MagazineHome from '../components/home/MagazineHome.vue';
 import NotFound from '../components/home/NotFound.vue';
 import AppLayout from '../components/os/AppLayout.vue';
@@ -149,7 +149,8 @@ const routes = [
 ];
 
 const router = createRouter({
-  history: createWebHistory(),
+  // hash 模式：兼容手机端内置浏览器（微信 X5 / iOS Safari 对 pushState 支持有坑）
+  history: createWebHashHistory(),
   routes,
 });
 

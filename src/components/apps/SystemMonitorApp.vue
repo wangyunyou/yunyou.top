@@ -3,7 +3,7 @@ import { ref, onMounted, onUnmounted } from 'vue';
 import { MemoryStick, Globe, Battery, Zap, Cpu, Info, Activity } from 'lucide-vue-next';
 
 const memLoad = ref(null);
-const memUsed = ref(undefined);
+const memUsed = ref(null);
 const memLimit = ref(0);
 const netDown = ref(null);
 const batteryLevel = ref(null);

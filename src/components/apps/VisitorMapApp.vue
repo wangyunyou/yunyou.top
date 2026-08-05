@@ -90,25 +90,97 @@ const initPresenceCount = async () => {
   }
 };
 
-// ===== Fetch Real IP Location =====
-const fetchMyLocation = async () => {
+// ===== Fetch Real IP Location (with fallbacks + timeout) =====
+const TIMEOUT_MS = 4000;
+
+const fetchWithTimeout = async (url, opts = {}) => {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
   try {
-    const res = await fetch('https://ipapi.co/json/');
-    if (!res.ok) throw new Error('API error');
-    const data = await res.json();
-    if (data && data.latitude && data.longitude) {
-      yourLocation.value = {
-        city: data.city || '未知城市',
-        country: data.country_name || '未知国家',
-        region: data.region || '',
-        lat: data.latitude,
-        lng: data.longitude,
-        ip: data.ip || '',
-        isp: data.org || '',
-        timezone: data.timezone || '',
-      };
+    const res = await fetch(url, { ...opts, signal: controller.signal });
+    return res;
+  } finally {
+    clearTimeout(timer);
+  }
+};
+
+// Normalize responses from different IP APIs into the same shape
+const normalizeIpData = (provider, data) => {
+  if (provider === 'ipapi') {
+    return {
+      city: data.city,
+      country: data.country_name,
+      region: data.region,
+      lat: data.latitude,
+      lng: data.longitude,
+      ip: data.ip,
+      isp: data.org,
+      timezone: data.timezone,
+    };
+  }
+  if (provider === 'ip-api') {
+    return {
+      city: data.city,
+      country: data.country,
+      region: data.regionName,
+      lat: data.lat,
+      lng: data.lon,
+      ip: data.query,
+      isp: data.isp || data.org,
+      timezone: data.timezone,
+    };
+  }
+  if (provider === 'ipwho') {
+    return {
+      city: data.city,
+      country: data.country,
+      region: data.region,
+      lat: data.latitude,
+      lng: data.longitude,
+      ip: data.ip,
+      isp: data.connection?.isp || data.connection?.org,
+      timezone: data.timezone?.id,
+    };
+  }
+  return null;
+};
+
+const isValid = (loc) => loc && Number.isFinite(loc.lat) && Number.isFinite(loc.lng);
+
+const fetchMyLocation = async () => {
+  const sources = [
+    { provider: 'ipapi', url: 'https://ipapi.co/json/' },
+    { provider: 'ipwho', url: 'https://ipwho.is/' },
+    { provider: 'ip-api', url: 'http://ip-api.com/json/?lang=zh-CN' },
+  ];
+
+  try {
+    for (const { provider, url } of sources) {
+      try {
+        const res = await fetchWithTimeout(url);
+        if (!res.ok) continue;
+        const data = await res.json();
+        // ip-api.com returns {status: 'success', ...} or {status: 'fail', ...}
+        if (data?.status === 'fail') continue;
+        const loc = normalizeIpData(provider, data);
+        if (isValid(loc)) {
+          yourLocation.value = {
+            city: loc.city || '未知城市',
+            country: loc.country || '未知国家',
+            region: loc.region || '',
+            lat: loc.lat,
+            lng: loc.lng,
+            ip: loc.ip || '',
+            isp: loc.isp || '',
+            timezone: loc.timezone || '',
+          };
+          return;
+        }
+      } catch {
+        // try next source
+      }
     }
-  } catch {
+    // All sources failed
     locationError.value = true;
   } finally {
     isLoading.value = false;
@@ -201,6 +273,9 @@ const cityPoints = computed(() =>
         <p class="text-[11px] text-slate-500 mt-0.5">
           <template v-if="yourLocation">
             你的位置：{{ yourLocation.city }}, {{ yourLocation.country }} · ISP: {{ yourLocation.isp }}
+          </template>
+          <template v-else-if="locationError">
+            定位失败（IP 服务不可达），仅显示世界时钟
           </template>
           <template v-else>
             正在定位你的位置...
