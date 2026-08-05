@@ -12,7 +12,7 @@
 - Tailwind CSS 3
 - Lucide Vue Next 图标
 - Supabase (聊天室实时消息 + 在线人数)
-- 智谱 AI API (Vite 代理 `/api/ai/chat`，密钥不进前端包)
+- 智谱 AI API (前端直连，Key 内嵌在 AIApp.vue 中)
 
 ## 命令
 
@@ -80,17 +80,22 @@ src/
 
 ### AI 代理
 
-Vite 配置了自定义插件 `aiProxyPlugin`，拦截 `/api/ai/chat` 请求转发到智谱 BigModel API。密钥从环境变量 `ZHIPU_API_KEY` 读取，不会打包到前端。开发和生产预览环境都支持。
+AI 功能直接在前端调用智谱 BigModel API（`https://open.bigmodel.cn/api/paas/v4/chat/completions`），Key 内嵌在 `AIApp.vue` 中，无需后端代理。纯静态部署即可使用。
 
 ## 环境变量
 
-在 `.env.local` 中配置：
+复制 `.env.example` 为 `.env.local` 后填写（可选）：
 
 ```bash
-VITE_SUPABASE_URL=         # Supabase 项目 URL
-VITE_SUPABASE_ANON_KEY=    # Supabase anon key
-ZHIPU_API_KEY=             # 智谱 API 密钥（服务端代理用）
+cp .env.example .env.local
 ```
+
+| 变量 | 说明 | 获取地址 |
+|---|---|---|
+| `VITE_SUPABASE_URL` | Supabase 项目 URL（可选，聊天室） | https://supabase.com/dashboard → Settings → API |
+| `VITE_SUPABASE_ANON_KEY` | Supabase anon key（可选，聊天室） | 同上 |
+
+> 不配 Supabase 时聊天室和在线人数不可用，但主页和其他应用正常。AI 功能无需配置环境变量，Key 已内嵌。
 
 ## 注意事项
 

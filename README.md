@@ -33,8 +33,18 @@ npm install
 
 # 配置环境变量
 cp .env.example .env.local
-# 编辑 .env.local，填入你的 Supabase 项目 URL 和 anon key
+```
 
+然后编辑 `.env.local`，配置 Supabase：
+
+| 变量 | 用途 | 获取地址 |
+|---|---|---|
+| `VITE_SUPABASE_URL` | 聊天室 + 在线人数 | https://supabase.com/dashboard → Settings → API |
+| `VITE_SUPABASE_ANON_KEY` | 同上 | 同上 |
+
+> 不配 Supabase 不影响主页和其他应用，只影响匿名聊天室和在线人数统计。
+
+```bash
 # 启动开发服务器
 npm run dev
 ```
