@@ -220,6 +220,7 @@ onUnmounted(() => {
             class="w-full h-full object-cover"
             :src="videoUrl"
             loop
+            muted
             @playing="onVideoPlay"
             @click="togglePlay"
             @error="onVideoError"

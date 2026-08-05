@@ -217,6 +217,7 @@ const setReveal = (el) => {
   if (el && !revealEls.includes(el)) revealEls.push(el);
 };
 
+let io = null;
 onMounted(() => {
   presenceStore.initPresence();
   timer = setInterval(() => {
@@ -224,7 +225,7 @@ onMounted(() => {
   }, 1000);
 
   requestAnimationFrame(() => {
-    const io = new IntersectionObserver(
+    io = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
@@ -241,6 +242,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   if (timer) clearInterval(timer);
+  if (io) io.disconnect();
 });
 
 // ---------- Parallax helpers ----------

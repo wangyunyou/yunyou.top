@@ -2,12 +2,12 @@
 import { ref, onMounted, onUnmounted } from 'vue';
 import { MemoryStick, Globe, Battery, Zap, Cpu, Info, Activity } from 'lucide-vue-next';
 
-const memLoad = ref(0);
-const memUsed = ref(0);
+const memLoad = ref(null);
+const memUsed = ref(undefined);
 const memLimit = ref(0);
-const netDown = ref(0);
-const batteryLevel = ref(0);
-const isCharging = ref(false);
+const netDown = ref(null);
+const batteryLevel = ref(null);
+const isCharging = ref(null);
 const hardwareConcurrency = navigator.hardwareConcurrency || '未知';
 const deviceMemory = navigator.deviceMemory || '未知';
 
@@ -133,7 +133,7 @@ onUnmounted(() => {
             <span class="font-bold">下行带宽 (Downlink)</span>
           </div>
           <div class="text-center py-4">
-            <div class="text-5xl font-mono font-bold text-slate-100 mb-2">{{ netDown }}</div>
+            <div class="text-5xl font-mono font-bold text-slate-100 mb-2">{{ netDown !== null ? netDown : '--' }}</div>
             <div class="text-xs text-amber-500 font-bold tracking-widest uppercase">Mbps</div>
           </div>
           <p class="text-[9px] text-slate-600 text-center mt-4 italic">此数据代表浏览器检测到的网络最大估计速度</p>
@@ -149,14 +149,14 @@ onUnmounted(() => {
             <div class="relative w-32 h-16 border-4 border-white/10 rounded-xl p-1.5 mb-4">
                <div 
                 class="h-full rounded-md transition-all duration-1000 flex items-center justify-center text-[10px] font-bold text-white shadow-lg" 
-                :class="batteryLevel > 20 ? 'bg-emerald-500 shadow-emerald-500/20' : 'bg-rose-500 shadow-rose-500/20'"
-                :style="{ width: `${batteryLevel}%` }"
+                :class="batteryLevel !== null && batteryLevel > 20 ? 'bg-emerald-500 shadow-emerald-500/20' : 'bg-rose-500 shadow-rose-500/20'"
+                :style="{ width: `${batteryLevel || 0}%` }"
                >
                </div>
                <div class="absolute -right-3 top-1/2 -translate-y-1/2 w-2 h-6 bg-white/10 rounded-r-md"></div>
             </div>
             <div class="flex items-center gap-3">
-              <span class="text-3xl font-mono font-bold">{{ batteryLevel }}%</span>
+              <span class="text-3xl font-mono font-bold">{{ batteryLevel !== null ? batteryLevel + '%' : '--' }}</span>
               <div v-if="isCharging" class="px-2 py-1 bg-emerald-500/20 text-emerald-400 rounded-md text-[10px] font-bold flex items-center gap-1">
                 <Zap class="w-3 h-3 fill-current" /> 充电中
               </div>
@@ -167,7 +167,7 @@ onUnmounted(() => {
     </div>
 
     <!-- Warning for non-chrome users -->
-    <div v-if="!memUsed" class="mx-6 p-4 bg-rose-500/10 border border-rose-500/20 rounded-xl text-xs text-rose-400 flex gap-3">
+    <div v-if="memUsed === null" class="mx-6 p-4 bg-rose-500/10 border border-rose-500/20 rounded-xl text-xs text-rose-400 flex gap-3">
        <Info class="w-4 h-4 shrink-0" />
        <p>检测到当前浏览器不支持 `performance.memory` API（如 Safari/Firefox）。为了保证数据的“绝对真实”，已自动停用该模块的模拟显示。</p>
     </div>

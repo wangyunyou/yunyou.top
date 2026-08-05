@@ -129,15 +129,29 @@ const generate = async () => {
     }
 
     const data = await response.json();
-    let content = data.choices[0].message.content;
+    const content = data?.choices?.[0]?.message?.content;
+    if (!content) {
+      throw new Error('AI 返回内容为空，请重试');
+    }
 
     // Clean up markdown code blocks if present
-    content = content
+    let cleaned = content
       .replace(/```json\s*/g, '')
       .replace(/```\s*/g, '')
       .trim();
 
-    const parsed = JSON.parse(content);
+    const parsed = JSON.parse(cleaned);
+    // 确保所有必需字段存在且类型正确
+    parsed.badge = parsed.badge || '';
+    parsed.title = parsed.title || '未命名产品';
+    parsed.subtitle = parsed.subtitle || '';
+    parsed.cta = parsed.cta || '立即体验';
+    parsed.ctaSecondary = parsed.ctaSecondary || '了解更多';
+    parsed.footer = parsed.footer || '';
+    parsed.features = Array.isArray(parsed.features) ? parsed.features : [];
+    parsed.stats = Array.isArray(parsed.stats) ? parsed.stats : [];
+    parsed.testimonials = Array.isArray(parsed.testimonials) ? parsed.testimonials : [];
+    parsed.faq = Array.isArray(parsed.faq) ? parsed.faq : [];
     generatedData.value = parsed;
   } catch (e) {
     error.value = `生成失败：${e.message}。请重试或调整描述。`;
@@ -491,13 +505,24 @@ const copyCode = async () => {
     await navigator.clipboard.writeText(renderedHTML.value);
     copied.value = true;
     setTimeout(() => (copied.value = false), 2000);
-  } catch {}
+  } catch {
+    // fallback: 选中文本供用户手动复制
+    const ta = document.createElement('textarea');
+    ta.value = renderedHTML.value;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); copied.value = true; setTimeout(() => (copied.value = false), 2000); } catch {}
+    document.body.removeChild(ta);
+  }
 };
 
 const openInNewTab = () => {
   const blob = new Blob([renderedHTML.value], { type: 'text/html;charset=utf-8' });
   const url = URL.createObjectURL(blob);
   window.open(url, '_blank');
+  setTimeout(() => URL.revokeObjectURL(url), 10000);
 };
 </script>
 
@@ -686,7 +711,7 @@ const openInNewTab = () => {
           v-if="generatedData && previewMode === 'preview'"
           :srcdoc="renderedHTML"
           class="w-full h-full border-0 bg-white"
-          sandbox="allow-scripts allow-same-origin"
+          sandbox="allow-scripts"
         ></iframe>
 
         <!-- Code View -->

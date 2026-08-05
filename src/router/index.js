@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import MagazineHome from '../components/home/MagazineHome.vue';
+import NotFound from '../components/home/NotFound.vue';
 import AppLayout from '../components/os/AppLayout.vue';
 
 const routes = [
@@ -115,6 +116,11 @@ const routes = [
         meta: { title: 'AI 落地页生成器', accent: 'orange' },
       },
     ],
+  },
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'NotFound',
+    component: NotFound,
   },
 ];
 

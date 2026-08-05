@@ -10,8 +10,14 @@ import {
   Info,
 } from 'lucide-vue-next';
 
+let savedMessages = null;
+try {
+  savedMessages = JSON.parse(localStorage.getItem('yunyou-ai-messages'));
+} catch {
+  savedMessages = null;
+}
 const messages = ref(
-  JSON.parse(localStorage.getItem('yunyou-ai-messages')) || [
+  savedMessages || [
     {
       role: 'assistant',
       content: '你好！我是云优 AI 助手，很高兴为你服务。有什么我可以帮你的吗？',
@@ -24,11 +30,15 @@ const isComposing = ref(false);
 const chatContainer = ref(null);
 const textareaRef = ref(null);
 
-// Persistence
+// Persistence (debounced to avoid excessive writes during streaming)
+let saveTimer = null;
 watch(
   messages,
   (newVal) => {
-    localStorage.setItem('yunyou-ai-messages', JSON.stringify(newVal));
+    if (saveTimer) clearTimeout(saveTimer);
+    saveTimer = setTimeout(() => {
+      localStorage.setItem('yunyou-ai-messages', JSON.stringify(newVal));
+    }, 500);
   },
   { deep: true }
 );
@@ -82,6 +92,8 @@ const sendMessage = async () => {
   const userContent = input.value;
   messages.value.push({ role: 'user', content: userContent });
   input.value = '';
+  await nextTick();
+  adjustTextarea();
   isTyping.value = true;
 
   // Create an empty placeholder for the assistant's response
@@ -125,6 +137,9 @@ const sendMessage = async () => {
       throw new Error(message);
     }
 
+    if (!response.body) {
+      throw new Error('流式响应不可用，请检查网络环境');
+    }
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
     let partialData = '';
@@ -156,15 +171,7 @@ const sendMessage = async () => {
       }
     }
   } catch (error) {
-    let display = `抱歉，通讯中断：${error.message}`;
-    if (
-      error.message.includes('ZHIPU_API_KEY') ||
-      error.message.includes('未配置')
-    ) {
-      display +=
-        '。请在项目根目录创建 .env.local 并填写 ZHIPU_API_KEY=你的智谱 API Key，然后重启服务。';
-    }
-    messages.value[assistantMessageIndex].content = display;
+    messages.value[assistantMessageIndex].content = `抱歉，通讯中断：${error.message}。请稍后重试。`;
   } finally {
     isTyping.value = false;
     scrollToBottom();

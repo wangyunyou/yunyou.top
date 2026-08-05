@@ -5,7 +5,11 @@ import { supabase } from '../../lib/supabase';
 
 const messages = ref([]);
 const newMessage = ref('');
-const username = ref(`User-${Math.floor(Math.random() * 900) + 100}`);
+const username = ref(
+  localStorage.getItem('yunyou-chat-username') ||
+  `User-${Math.floor(Math.random() * 900) + 100}`
+);
+localStorage.setItem('yunyou-chat-username', username.value);
 const chatContainer = ref(null);
 const onlineCount = ref(1); // 默认为1人
 const connectionState = ref('connecting');
@@ -30,7 +34,7 @@ const fetchMessages = async () => {
     .order('created_at', { ascending: false })
     .limit(20);
   
-  if (!error) {
+  if (!error && data) {
     connectionState.value = 'online';
     const chronologicalData = [...data].reverse();
     messages.value = chronologicalData.map(m => ({
@@ -191,9 +195,9 @@ const subscribeToMessages = () => {
           user: username.value,
           online_at: new Date().toISOString(),
         });
-      } else if (status === 'CHANNEL_ERROR') {
+      } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
         connectionState.value = 'offline';
-        console.error('Supabase Channel Error: Realtime might not be enabled for this table.');
+        console.error('Supabase Channel status:', status);
       }
     });
 };

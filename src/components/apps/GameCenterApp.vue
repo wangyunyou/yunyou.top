@@ -156,8 +156,8 @@ const move2048 = (dir) => {
     setTimeout(() => {
       tiles.value = tiles.value.filter(t => !t.mergedInto);
     }, 100);
-    checkGameOver2048();
   }
+  checkGameOver2048();
 };
 
 const checkGameOver2048 = () => {

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 import {
   Image as ImageIcon,
   RefreshCw,
@@ -11,6 +11,8 @@ import {
 const imageSrc = ref('');
 const isLoading = ref(true);
 const history = ref([]);
+let isActive = true;
+let retryTimer = null;
 
 const sources = [
   { name: '云优精选', api: 'https://api.yujn.cn/api/heisi.php?' },
@@ -42,13 +44,15 @@ const refreshImage = (candidateIndex = 0) => {
   const img = new Image();
   img.src = newSrc;
   img.onload = () => {
+    if (!isActive) return;
     imageSrc.value = newSrc;
     isLoading.value = false;
     history.value.unshift(newSrc);
     if (history.value.length > 20) history.value.pop();
   };
   img.onerror = () => {
-    setTimeout(() => refreshImage(candidateIndex + 1), 400);
+    if (!isActive) return;
+    retryTimer = setTimeout(() => refreshImage(candidateIndex + 1), 400);
   };
 };
 
@@ -71,6 +75,11 @@ const selectSource = (source) => {
 
 onMounted(() => {
   refreshImage();
+});
+
+onUnmounted(() => {
+  isActive = false;
+  if (retryTimer) clearTimeout(retryTimer);
 });
 </script>
 
