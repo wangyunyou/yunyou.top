@@ -11,7 +11,7 @@
 - Vue Router 4
 - Tailwind CSS 3
 - Lucide Vue Next 图标
-- Supabase (聊天室实时消息 + 在线人数)
+- Supabase (聊天室实时消息 + 在线人数，Key 内嵌在 supabase.js 中)
 - 智谱 AI API (前端直连，Key 内嵌在 AIApp.vue 中)
 
 ## 命令
@@ -50,7 +50,7 @@ src/
 │   └── presenceStore.js        # 在线人数（Supabase Realtime Presence）
 └── lib/
     ├── appRegistry.js          # 应用注册表（defineAsyncComponent 懒加载）
-    └── supabase.js             # Supabase 客户端（需配置环境变量）
+    └── supabase.js             # Supabase 客户端（Key 已内嵌，无需环境变量）
 ```
 
 ## 关键架构
@@ -84,7 +84,9 @@ AI 功能直接在前端调用智谱 BigModel API（`https://open.bigmodel.cn/ap
 
 ## 环境变量
 
-复制 `.env.example` 为 `.env.local` 后填写（可选）：
+所有 Key 已内嵌在代码中（AIApp.vue + supabase.js），**无需配置任何环境变量即可运行全部功能**。
+
+如需替换为自己的 Key，可在 `.env.local` 中覆盖：
 
 ```bash
 cp .env.example .env.local
@@ -92,10 +94,10 @@ cp .env.example .env.local
 
 | 变量 | 说明 | 获取地址 |
 |---|---|---|
-| `VITE_SUPABASE_URL` | Supabase 项目 URL（可选，聊天室） | https://supabase.com/dashboard → Settings → API |
-| `VITE_SUPABASE_ANON_KEY` | Supabase anon key（可选，聊天室） | 同上 |
+| `VITE_SUPABASE_URL` | Supabase 项目 URL（可选，覆盖内置值） | https://supabase.com/dashboard → Settings → API |
+| `VITE_SUPABASE_ANON_KEY` | Supabase anon key（可选，覆盖内置值） | 同上 |
 
-> 不配 Supabase 时聊天室和在线人数不可用，但主页和其他应用正常。AI 功能无需配置环境变量，Key 已内嵌。
+> AI Key 也已内嵌在 AIApp.vue 中。环境变量为可选覆盖，不配也能正常使用。
 
 ## 注意事项
 

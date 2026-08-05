@@ -1,15 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://gibdjdyrwuofrtknrwrx.supabase.co';
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdpYmRqZHlyd3VvZnJ0a25yd3J4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0NDk1ODMsImV4cCI6MjA5NDAyNTU4M30.7k2XemxeFTvEeTOft3h9zZ1P59CrzOnCRnN2JbfWshg';
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.warn(
-    '[Supabase] VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY 未配置，匿名聊天和在线人数将不可用。请参考 BACKEND.md。'
-  );
-}
-
-export const supabase = createClient(
-  supabaseUrl || 'https://placeholder.supabase.co',
-  supabaseAnonKey || 'placeholder-anon-key'
-);
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);

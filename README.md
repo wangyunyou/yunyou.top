@@ -31,25 +31,13 @@
 # 安装依赖
 npm install
 
-# 配置环境变量
-cp .env.example .env.local
-```
-
-然后编辑 `.env.local`，配置 Supabase：
-
-| 变量 | 用途 | 获取地址 |
-|---|---|---|
-| `VITE_SUPABASE_URL` | 聊天室 + 在线人数 | https://supabase.com/dashboard → Settings → API |
-| `VITE_SUPABASE_ANON_KEY` | 同上 | 同上 |
-
-> 不配 Supabase 不影响主页和其他应用，只影响匿名聊天室和在线人数统计。
-
-```bash
 # 启动开发服务器
 npm run dev
 ```
 
-访问 `http://localhost:5173` 即可看到主页。
+访问 `http://localhost:5173` 即可看到主页，全部功能开箱即用。
+
+> 所有 API Key 已内嵌在代码中，无需额外配置。如需替换为自己的 Key，可创建 `.env.local` 覆盖（参考 `.env.example`）。
 
 ## 构建部署
 
