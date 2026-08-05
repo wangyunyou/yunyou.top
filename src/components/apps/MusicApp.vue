@@ -86,49 +86,59 @@ const formatTime = (seconds) => {
   return `${min}:${sec.toString().padStart(2, '0')}`;
 };
 
+const handleTimeUpdate = () => {
+  currentTime.value = audio.currentTime;
+};
+
+const handleLoadedMetadata = () => {
+  duration.value = audio.duration;
+};
+
+const handleEnded = () => {
+  nextTrack();
+};
+
+const handleError = () => {
+  failedTracks.add(currentTrack.value.id);
+  if (failedTracks.size >= playlist.length) {
+    isPlaying.value = false;
+    return;
+  }
+
+  const nextIndex = playlist.findIndex(
+    (track, index) => !failedTracks.has(track.id) && index > currentTrackIndex.value
+  );
+  const fallbackIndex =
+    nextIndex !== -1
+      ? nextIndex
+      : playlist.findIndex((track) => !failedTracks.has(track.id));
+
+  if (fallbackIndex !== -1) {
+    currentTrackIndex.value = fallbackIndex;
+    playCurrentTrack(true);
+  } else {
+    isPlaying.value = false;
+  }
+};
+
 onMounted(() => {
   audio.src = currentTrack.value.url;
   audio.volume = volume.value;
-  
-  audio.ontimeupdate = () => {
-    currentTime.value = audio.currentTime;
-  };
-  
-  audio.onloadedmetadata = () => {
-    duration.value = audio.duration;
-  };
 
-  audio.onended = () => {
-    nextTrack();
-  };
-
-  audio.onerror = () => {
-    failedTracks.add(currentTrack.value.id);
-    if (failedTracks.size >= playlist.length) {
-      isPlaying.value = false;
-      return;
-    }
-
-    const nextIndex = playlist.findIndex(
-      (track, index) => !failedTracks.has(track.id) && index > currentTrackIndex.value
-    );
-    const fallbackIndex =
-      nextIndex !== -1
-        ? nextIndex
-        : playlist.findIndex((track) => !failedTracks.has(track.id));
-
-    if (fallbackIndex !== -1) {
-      currentTrackIndex.value = fallbackIndex;
-      playCurrentTrack(true);
-    } else {
-      isPlaying.value = false;
-    }
-  };
+  audio.addEventListener('timeupdate', handleTimeUpdate);
+  audio.addEventListener('loadedmetadata', handleLoadedMetadata);
+  audio.addEventListener('ended', handleEnded);
+  audio.addEventListener('error', handleError);
 });
 
 onUnmounted(() => {
   audio.pause();
+  audio.removeEventListener('timeupdate', handleTimeUpdate);
+  audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
+  audio.removeEventListener('ended', handleEnded);
+  audio.removeEventListener('error', handleError);
   audio.src = '';
+  audio.load();
 });
 
 const progress = computed(() => {
