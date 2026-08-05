@@ -1,6 +1,6 @@
 <script setup>
 import { useConfigStore } from '../../stores/configStore';
-import { Monitor, Image as ImageIcon, Check, Sparkles, Key } from 'lucide-vue-next';
+import { Monitor, Image as ImageIcon, Check } from 'lucide-vue-next';
 
 const configStore = useConfigStore();
 </script>

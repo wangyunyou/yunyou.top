@@ -1,12 +1,12 @@
 <script setup>
+import { onMounted, onUnmounted, ref } from 'vue';
 import { useWindowStore } from '../../stores/windowStore';
 import { useConfigStore } from '../../stores/configStore';
+import { appRegistry } from '../../lib/appRegistry';
 import DesktopIcon from './DesktopIcon.vue';
 import Window from './Window.vue';
+import ContextMenu from './ContextMenu.vue';
 import {
-  User,
-  Terminal,
-  Briefcase,
   Settings,
   Activity,
   MessagesSquare,
@@ -15,41 +15,24 @@ import {
   Film,
   Image as ImageIcon,
   Sparkles,
-  Globe,
 } from 'lucide-vue-next';
-import ContextMenu from './ContextMenu.vue';
-
-// Import Apps
-import SettingsApp from '../apps/SettingsApp.vue';
-import SystemMonitorApp from '../apps/SystemMonitorApp.vue';
-import ChatApp from '../apps/ChatApp.vue';
-import MusicApp from '../apps/MusicApp.vue';
-import VideoApp from '../apps/VideoApp.vue';
-import GalleryApp from '../apps/GalleryApp.vue';
-import AIApp from '../apps/AIApp.vue';
-import GameCenterApp from '../apps/GameCenterApp.vue';
-import { ref, onMounted, onUnmounted, markRaw } from 'vue';
-import { Cloud, Sun, CloudRain, Clock } from 'lucide-vue-next';
 
 const windowStore = useWindowStore();
 const configStore = useConfigStore();
 
-// Map strings to components
-const appMap = {
-  SettingsApp: markRaw(SettingsApp),
-  SystemMonitorApp: markRaw(SystemMonitorApp),
-  ChatApp: markRaw(ChatApp),
-  MusicApp: markRaw(MusicApp),
-  VideoApp: markRaw(VideoApp),
-  GalleryApp: markRaw(GalleryApp),
-  AIApp: markRaw(AIApp),
-  GameCenterApp: markRaw(GameCenterApp),
+const appMap = appRegistry;
+
+const appSizes = {
+  GameCenterApp: {
+    width: Math.max(320, Math.min(1100, window.innerWidth - 80)),
+    height: Math.max(480, Math.min(760, window.innerHeight - 80)),
+  },
 };
 
 const openApp = (id, title, componentName) => {
   const comp = appMap[componentName];
   if (comp) {
-    windowStore.openWindow(id, title, comp);
+    windowStore.openWindow(id, title, comp, componentName, {}, appSizes[componentName] || {});
   }
 };
 
@@ -64,7 +47,6 @@ const dailyQuote = ref(quotes[Math.floor(Math.random() * quotes.length)]);
 
 const currentTime = ref(new Date());
 const timer = ref(null);
-const isGravityActive = ref(false);
 const isMobile = ref(false);
 
 const checkMobile = () => {
@@ -73,6 +55,7 @@ const checkMobile = () => {
 
 onMounted(() => {
   checkMobile();
+  windowStore.hydrateWindows((componentName) => appMap[componentName] || null);
   window.addEventListener('resize', checkMobile);
   timer.value = setInterval(() => {
     currentTime.value = new Date();
@@ -170,15 +153,6 @@ const handleMenuAction = (id) => {
           @click="openApp('game', '云优游戏厅', 'GameCenterApp')"
         />
 
-        <!-- Context Menu -->
-        <ContextMenu
-          :x="contextMenuPos.x"
-          :y="contextMenuPos.y"
-          :visible="showContextMenu"
-          @close="showContextMenu = false"
-          @action="handleMenuAction"
-        />
-
         <!-- Secondary Apps -->
         <DesktopIcon
           label="系统监控"
@@ -197,6 +171,15 @@ const handleMenuAction = (id) => {
         />
       </div>
     </div>
+
+    <!-- Context Menu -->
+    <ContextMenu
+      :x="contextMenuPos.x"
+      :y="contextMenuPos.y"
+      :visible="showContextMenu"
+      @close="showContextMenu = false"
+      @action="handleMenuAction"
+    />
 
     <!-- Windows Layer -->
     <Window v-for="win in windowStore.windows" :key="win.id" :window="win" />

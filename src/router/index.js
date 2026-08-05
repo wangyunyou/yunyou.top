@@ -1,6 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import Desktop from '../components/os/Desktop.vue';
-import ChatApp from '../components/apps/ChatApp.vue';
 
 const routes = [
   {
@@ -11,7 +10,7 @@ const routes = [
   {
     path: '/chat',
     name: 'Chat',
-    component: ChatApp,
+    component: () => import('../components/apps/ChatApp.vue'),
     meta: { fullScreen: true } // 标记这个组件需要全屏（不带 OS 外壳）
   }
 ];

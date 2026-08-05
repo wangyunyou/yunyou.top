@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue';
-import { MemoryStick, Globe, Battery, Zap, Cpu, Info } from 'lucide-vue-next';
+import { MemoryStick, Globe, Battery, Zap, Cpu, Info, Activity } from 'lucide-vue-next';
 
 const memLoad = ref(0);
 const memUsed = ref(0);
@@ -117,7 +117,7 @@ onUnmounted(() => {
           </div>
         </div>
 
-        <!-- Overly for Unsupported -->
+        <!-- Overlay for Unsupported -->
         <div v-if="memUsed === null" class="absolute inset-0 bg-slate-900/60 backdrop-blur-[2px] flex items-center justify-center p-6 text-center z-20">
           <p class="text-[10px] text-slate-400 leading-relaxed font-medium uppercase tracking-widest">
             当前浏览器（如 Safari/Firefox）<br>暂不支持实时内存采样
@@ -173,10 +173,3 @@ onUnmounted(() => {
     </div>
   </div>
 </template>
-
-<script>
-import { Activity } from 'lucide-vue-next';
-export default {
-  components: { Activity }
-}
-</script>

@@ -1,23 +1,16 @@
 <script setup>
-import { ref, onMounted, onUnmounted, computed } from 'vue';
+import { computed, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import Taskbar from './components/os/Taskbar.vue';
 import { usePresenceStore } from './stores/presenceStore';
-import { version } from '../package.json';
 
 const route = useRoute();
 const presenceStore = usePresenceStore();
-const isHackerMode = ref(false);
 
 const isFullScreen = computed(() => route.meta.fullScreen);
 
 onMounted(() => {
   presenceStore.initPresence();
-  // Global key listeners if needed
-});
-
-onUnmounted(() => {
-  // Cleanup
 });
 </script>
 

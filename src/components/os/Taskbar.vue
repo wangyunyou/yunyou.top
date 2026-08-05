@@ -1,15 +1,33 @@
 <script setup>
 import { ref, onMounted, onUnmounted, computed } from 'vue';
+import { useRouter } from 'vue-router';
+import { onClickOutside } from '@vueuse/core';
 import { useWindowStore } from '../../stores/windowStore';
-import { Monitor, Square, Minus, X, Radio } from 'lucide-vue-next';
+import { appRegistry } from '../../lib/appRegistry';
+import {
+  Monitor,
+  MessagesSquare,
+  Sparkles,
+  Settings,
+  Activity,
+  RefreshCw,
+  ExternalLink,
+} from 'lucide-vue-next';
 import { usePresenceStore } from '../../stores/presenceStore';
 
 const windowStore = useWindowStore();
 const presenceStore = usePresenceStore();
+const router = useRouter();
 
-const emit = defineEmits(['toggle-hacker']);
 const time = ref(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
 let timer;
+
+const startMenuRef = ref(null);
+const startMenuOpen = ref(false);
+
+onClickOutside(startMenuRef, () => {
+  startMenuOpen.value = false;
+});
 
 onMounted(() => {
   timer = setInterval(() => {
@@ -36,6 +54,48 @@ const handleTaskbarClick = (win) => {
     }
   }
 };
+
+const startActions = [
+  { id: 'chat', label: '匿名聊天', icon: MessagesSquare },
+  { id: 'ai', label: '云优 AI', icon: Sparkles },
+  { id: 'settings', label: '系统设置', icon: Settings },
+  { id: 'monitor', label: '系统监控', icon: Activity },
+  { divider: true },
+  { id: 'refresh', label: '刷新页面', icon: RefreshCw },
+  { id: 'github', label: '源码地址', icon: ExternalLink },
+];
+
+const openApp = (id, title, componentName) => {
+  const component = appRegistry[componentName];
+  if (component) {
+    windowStore.openWindow(id, title, component, componentName);
+  }
+};
+
+const handleStartAction = (id) => {
+  startMenuOpen.value = false;
+
+  switch (id) {
+    case 'chat':
+      router.push('/chat');
+      break;
+    case 'ai':
+      openApp('ai', '云优 AI 助手', 'AIApp');
+      break;
+    case 'settings':
+      openApp('settings', '系统设置', 'SettingsApp');
+      break;
+    case 'monitor':
+      openApp('monitor', '系统监视器', 'SystemMonitorApp');
+      break;
+    case 'refresh':
+      window.location.reload();
+      break;
+    case 'github':
+      window.open('https://github.com/wangyunyou/yunyou.top', '_blank');
+      break;
+  }
+};
 </script>
 
 <template>
@@ -44,9 +104,32 @@ const handleTaskbarClick = (win) => {
   >
     <!-- Start Button & Active Apps -->
     <div class="flex items-center gap-4 h-full">
-      <button class="p-2 rounded-lg hover:bg-white/10 transition-all active:scale-90 group">
-        <Monitor class="w-6 h-6 text-sky-400 group-hover:drop-shadow-[0_0_8px_#38bdf8]" />
-      </button>
+      <div ref="startMenuRef" class="relative flex items-center h-full">
+        <button
+          class="p-2 rounded-lg hover:bg-white/10 transition-all active:scale-90 group"
+          aria-label="开始菜单"
+          @click="startMenuOpen = !startMenuOpen"
+        >
+          <Monitor class="w-6 h-6 text-sky-400 group-hover:drop-shadow-[0_0_8px_#38bdf8]" />
+        </button>
+
+        <div
+          v-if="startMenuOpen"
+          class="absolute bottom-14 left-0 w-56 bg-slate-900/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl p-1.5 z-[120]"
+        >
+          <template v-for="(item, index) in startActions" :key="index">
+            <div v-if="item.divider" class="h-px bg-white/5 my-1 mx-2"></div>
+            <button
+              v-else
+              class="w-full flex items-center gap-3 px-3 py-2 text-xs font-medium text-slate-200 hover:bg-sky-500 hover:text-white rounded-lg transition-all text-left"
+              @click="handleStartAction(item.id)"
+            >
+              <component :is="item.icon" class="w-4 h-4 text-slate-400" />
+              {{ item.label }}
+            </button>
+          </template>
+        </div>
+      </div>
 
       <div class="h-6 w-[1px] bg-white/10"></div>
 

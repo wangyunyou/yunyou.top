@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted, provide } from 'vue';
 import { useWindowStore } from '../../stores/windowStore';
 import { useDraggable } from '@vueuse/core';
 import { Minus, Square, X, Maximize2 } from 'lucide-vue-next';
@@ -82,6 +82,7 @@ watch(() => props.window.width, (val) => width.value = val);
 watch(() => props.window.height, (val) => height.value = val);
 
 const isActive = computed(() => windowStore.activeWindowId === props.window.id);
+provide('windowContext', { isActive });
 
 const handleMouseDown = () => {
   windowStore.focusWindow(props.window.id);

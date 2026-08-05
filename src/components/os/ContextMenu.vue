@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue';
-import { RefreshCw, Monitor, Image as ImageIcon, Settings, ExternalLink, Info } from 'lucide-vue-next';
+import { RefreshCw, Monitor, Image as ImageIcon, Settings, ExternalLink } from 'lucide-vue-next';
 
 const props = defineProps({
   x: Number,

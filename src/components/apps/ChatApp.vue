@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted, onUnmounted, nextTick } from 'vue';
-import { Send, Hash, Users, ShieldAlert } from 'lucide-vue-next';
+import { Send, Hash, Users, ShieldAlert, Loader2, WifiOff } from 'lucide-vue-next';
 import { supabase } from '../../lib/supabase';
 
 const messages = ref([]);
@@ -8,7 +8,19 @@ const newMessage = ref('');
 const username = ref(`User-${Math.floor(Math.random() * 900) + 100}`);
 const chatContainer = ref(null);
 const onlineCount = ref(1); // 默认为1人
+const connectionState = ref('connecting');
+const sendError = ref('');
+const isSending = ref(false);
+const maxMessageLength = 500;
+const blockedKeywords = ['加微信', '加qq', '加QQ', '买粉', '代刷', '赌博'];
+let lastSentAt = 0;
 let subscription = null;
+
+const formatTime = (iso) => {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return '';
+  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+};
 
 // 获取初始消息
 const fetchMessages = async () => {
@@ -19,31 +31,58 @@ const fetchMessages = async () => {
     .limit(20);
   
   if (!error) {
+    connectionState.value = 'online';
     const chronologicalData = [...data].reverse();
     messages.value = chronologicalData.map(m => ({
       id: m.id,
       user: m.username,
       text: m.content,
-      type: m.username === username.value ? 'me' : 'other'
+      createdAt: m.created_at,
+      type: m.username === username.value ? 'me' : 'other',
+      isPersisted: true
     }));
     scrollToBottom();
+  } else {
+    connectionState.value = 'offline';
+    console.error('Error fetching messages:', error);
   }
 };
 
 // 发送消息
 const sendMessage = async () => {
-  if (!newMessage.value.trim()) return;
-  
-  const content = newMessage.value;
-  newMessage.value = '';
+  const content = newMessage.value.trim();
+  sendError.value = '';
+  if (!content || isSending.value) return;
+
+  if (content.length > maxMessageLength) {
+    sendError.value = `消息不能超过 ${maxMessageLength} 字`;
+    return;
+  }
+
+  if (blockedKeywords.some((keyword) => content.toLowerCase().includes(keyword.toLowerCase()))) {
+    sendError.value = '内容包含受限词，请修改后再发送';
+    return;
+  }
+
+  const now = Date.now();
+  if (now - lastSentAt < 1500) {
+    sendError.value = '发送太快，请稍后再试';
+    return;
+  }
+  lastSentAt = now;
+  isSending.value = true;
 
   const tempId = Date.now();
+  const createdAt = new Date().toISOString();
   messages.value.push({
     id: tempId,
     user: username.value,
     text: content,
-    type: 'me'
+    createdAt,
+    type: 'me',
+    isPersisted: false
   });
+  newMessage.value = '';
   scrollToBottom();
 
   const { error } = await supabase
@@ -53,21 +92,25 @@ const sendMessage = async () => {
     ]);
 
   if (error) {
+    lastSentAt = 0;
     console.error('Error sending message:', error);
     messages.value = messages.value.filter(m => m.id !== tempId);
-    alert('发送失败，请检查 Supabase RLS 权限是否关闭！');
+    sendError.value = '发送失败，请检查 Supabase 配置和 RLS 权限';
+    connectionState.value = 'offline';
   } else {
     // 广播消息给其他在线用户 (双重保险)
-    subscription.send({
+    subscription?.send({
       type: 'broadcast',
       event: 'message',
       payload: {
         id: tempId,
         username: username.value,
-        content: content
+        content: content,
+        createdAt
       }
     });
   }
+  isSending.value = false;
 };
 
 // 订阅实时更新 & 在线人数
@@ -82,17 +125,34 @@ const subscribeToMessages = () => {
           id: newMsg.id,
           user: newMsg.username,
           text: newMsg.content,
-          type: 'other'
+          createdAt: newMsg.created_at,
+          type: 'other',
+          isPersisted: true
         });
         scrollToBottom();
       } else {
-        if (!messages.value.find(m => m.id === newMsg.id)) {
-           messages.value.push({
+        const tempIndex = messages.value.findIndex(
+          (m) => m.type === 'me' && m.text === newMsg.content && m.user === newMsg.username && !m.isPersisted
+        );
+        const shouldInsert = tempIndex === -1 && !messages.value.find(m => m.id === newMsg.id);
+        if (tempIndex !== -1) {
+          messages.value[tempIndex] = {
+            ...messages.value[tempIndex],
+            id: newMsg.id,
+            createdAt: newMsg.created_at,
+            isPersisted: true
+          };
+        } else if (shouldInsert) {
+          messages.value.push({
             id: newMsg.id,
             user: newMsg.username,
             text: newMsg.content,
-            type: 'me'
+            createdAt: newMsg.created_at,
+            type: 'me',
+            isPersisted: true
           });
+        }
+        if (tempIndex !== -1 || shouldInsert) {
           scrollToBottom();
         }
       }
@@ -108,7 +168,9 @@ const subscribeToMessages = () => {
             id: data.id,
             user: data.username,
             text: data.content,
-            type: 'other'
+            createdAt: data.createdAt || new Date().toISOString(),
+            type: 'other',
+            isPersisted: false
           });
           scrollToBottom();
         }
@@ -123,12 +185,14 @@ const subscribeToMessages = () => {
     .subscribe(async (status) => {
       console.log('Supabase Subscription Status:', status);
       if (status === 'SUBSCRIBED') {
+        connectionState.value = 'online';
         // 加入并在状态里登记自己
         await subscription.track({
           user: username.value,
           online_at: new Date().toISOString(),
         });
       } else if (status === 'CHANNEL_ERROR') {
+        connectionState.value = 'offline';
         console.error('Supabase Channel Error: Realtime might not be enabled for this table.');
       }
     });
@@ -170,6 +234,23 @@ onUnmounted(() => {
       </div>
     </div>
 
+    <div
+      v-if="connectionState !== 'online'"
+      class="px-4 py-2 bg-amber-500/10 border-b border-amber-500/20 text-[11px] text-amber-300 flex items-center gap-2"
+    >
+      <WifiOff v-if="connectionState === 'offline'" class="w-3.5 h-3.5" />
+      <Loader2 v-else class="w-3.5 h-3.5 animate-spin" />
+      {{ connectionState === 'offline' ? '聊天服务连接失败，请检查 Supabase 配置' : '正在连接聊天服务...' }}
+    </div>
+
+    <div
+      v-if="sendError"
+      class="px-4 py-2 bg-rose-500/10 border-b border-rose-500/20 text-[11px] text-rose-300 flex items-center gap-2"
+    >
+      <ShieldAlert class="w-3.5 h-3.5" />
+      {{ sendError }}
+    </div>
+
     <!-- Messages Area -->
     <div 
       ref="chatContainer"
@@ -192,7 +273,7 @@ onUnmounted(() => {
         <div v-else class="max-w-[80%] space-y-1">
           <div class="flex items-center gap-2 px-1">
             <span class="text-[10px] font-bold text-sky-400" v-if="msg.type !== 'me'">{{ msg.user }}</span>
-            <span class="text-[9px] text-slate-500">{{ new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) }}</span>
+            <span class="text-[9px] text-slate-500">{{ formatTime(msg.createdAt) }}</span>
           </div>
           <div 
             class="px-4 py-2.5 rounded-2xl text-sm"
@@ -216,18 +297,25 @@ onUnmounted(() => {
         <input 
           v-model="newMessage"
           type="text"
+          :maxlength="maxMessageLength"
+          :disabled="isSending"
           placeholder="输入消息，匿名发送..."
           class="flex-1 bg-black/20 border border-white/10 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-sky-500/50 transition-all placeholder:text-slate-600"
+          @input="sendError = ''"
         />
         <button 
           type="submit"
-          class="p-2 bg-sky-500 hover:bg-sky-400 text-white rounded-xl transition-all active:scale-90"
+          :disabled="isSending || !newMessage.trim()"
+          class="p-2 bg-sky-500 hover:bg-sky-400 text-white rounded-xl transition-all active:scale-90 disabled:opacity-40 disabled:cursor-not-allowed"
         >
-          <Send class="w-5 h-5" />
+          <Loader2 v-if="isSending" class="w-5 h-5 animate-spin" />
+          <Send v-else class="w-5 h-5" />
         </button>
       </form>
       <div class="mt-2 text-[9px] text-slate-500 text-center">
         当前身份：<span class="text-sky-500 font-mono">{{ username }}</span>
+        <span class="mx-2 text-slate-700">|</span>
+        <span>{{ newMessage.length }}/{{ maxMessageLength }}</span>
       </div>
     </div>
   </div>

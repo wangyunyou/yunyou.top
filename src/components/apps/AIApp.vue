@@ -1,9 +1,7 @@
 <script setup>
-import { ref, onMounted, nextTick } from 'vue';
-import { useConfigStore } from '../../stores/configStore';
-import { Send, Bot, User, Loader2, Sparkles, Trash2, Key, Info } from 'lucide-vue-next';
+import { ref, nextTick, watch } from 'vue';
+import { Send, Bot, User, Loader2, Sparkles, Trash2, Info } from 'lucide-vue-next';
 
-const configStore = useConfigStore();
 const messages = ref(JSON.parse(localStorage.getItem('yunyou-ai-messages')) || [
   { role: 'assistant', content: '你好！我是云优 AI 助手，很高兴为你服务。有什么我可以帮你的吗？' }
 ]);
@@ -14,7 +12,6 @@ const chatContainer = ref(null);
 const textareaRef = ref(null);
 
 // Persistence
-import { watch } from 'vue';
 watch(messages, (newVal) => {
   localStorage.setItem('yunyou-ai-messages', JSON.stringify(newVal));
 }, { deep: true });
@@ -57,10 +54,6 @@ const scrollToBottom = async () => {
 
 const sendMessage = async () => {
   if (!input.value.trim() || isTyping.value || isComposing.value) return;
-  if (!configStore.zhipuKey) {
-    alert('请配置通讯密钥后再试');
-    return;
-  }
 
   const userContent = input.value;
   messages.value.push({ role: 'user', content: userContent });
@@ -72,11 +65,10 @@ const sendMessage = async () => {
   scrollToBottom();
 
   try {
-    const response = await fetch('https://open.bigmodel.cn/api/paas/v4/chat/completions', {
+    const response = await fetch('/api/ai/chat', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${configStore.zhipuKey}`
       },
       body: JSON.stringify({
         model: 'glm-4-flash',

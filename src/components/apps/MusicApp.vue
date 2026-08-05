@@ -39,14 +39,18 @@ const currentTrackIndex = ref(0);
 const currentTrack = computed(() => playlist[currentTrackIndex.value]);
 
 const audio = new Audio();
+const failedTracks = new Set();
 
 const togglePlay = () => {
   if (isPlaying.value) {
     audio.pause();
+    isPlaying.value = false;
   } else {
-    audio.play();
+    isPlaying.value = true;
+    audio.play().catch(() => {
+      isPlaying.value = false;
+    });
   }
-  isPlaying.value = !isPlaying.value;
 };
 
 const nextTrack = () => {
@@ -59,9 +63,21 @@ const prevTrack = () => {
   playCurrentTrack();
 };
 
-const playCurrentTrack = () => {
+const selectTrack = (index) => {
+  failedTracks.clear();
+  currentTrackIndex.value = index;
+  playCurrentTrack(true);
+  showPlaylist.value = false;
+};
+
+const playCurrentTrack = (force = false) => {
   audio.src = currentTrack.value.url;
-  if (isPlaying.value) audio.play();
+  if (force || isPlaying.value) {
+    isPlaying.value = true;
+    audio.play().catch(() => {
+      isPlaying.value = false;
+    });
+  }
 };
 
 const formatTime = (seconds) => {
@@ -84,6 +100,29 @@ onMounted(() => {
 
   audio.onended = () => {
     nextTrack();
+  };
+
+  audio.onerror = () => {
+    failedTracks.add(currentTrack.value.id);
+    if (failedTracks.size >= playlist.length) {
+      isPlaying.value = false;
+      return;
+    }
+
+    const nextIndex = playlist.findIndex(
+      (track, index) => !failedTracks.has(track.id) && index > currentTrackIndex.value
+    );
+    const fallbackIndex =
+      nextIndex !== -1
+        ? nextIndex
+        : playlist.findIndex((track) => !failedTracks.has(track.id));
+
+    if (fallbackIndex !== -1) {
+      currentTrackIndex.value = fallbackIndex;
+      playCurrentTrack(true);
+    } else {
+      isPlaying.value = false;
+    }
   };
 });
 
@@ -202,7 +241,7 @@ const seek = (e) => {
           <div 
             v-for="(track, index) in playlist" 
             :key="track.id"
-            @click="currentTrackIndex = index; playCurrentTrack(); showPlaylist = false"
+            @click="selectTrack(index)"
             class="flex items-center justify-between p-3 rounded-xl cursor-pointer hover:bg-white/5 transition-colors"
             :class="currentTrackIndex === index ? 'bg-white/10 text-white' : 'text-slate-400'"
           >

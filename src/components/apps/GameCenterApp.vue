@@ -1,12 +1,50 @@
 <script setup>
-import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue';
-import { Gamepad2, RotateCcw, Trophy, ChevronLeft } from 'lucide-vue-next';
+import { ref, computed, watch, nextTick, inject, onMounted, onUnmounted } from 'vue';
+import { Gamepad2, RotateCcw, ChevronLeft, Layers, Pause, Play } from 'lucide-vue-next';
 
 const currentGame = ref(null);
+const windowContext = inject('windowContext', null);
 
 // Persistence
 const bestSnake = ref(parseInt(localStorage.getItem('snake-best') || '0'));
 const best2048 = ref(parseInt(localStorage.getItem('2048-best') || '0'));
+const bestTetris = ref(parseInt(localStorage.getItem('tetris-best') || '0'));
+
+// --- Tetris ---
+const TETRIS_COLS = 10;
+const TETRIS_ROWS = 20;
+const tetrisShapes = {
+  I: [['I', 'I', 'I', 'I']],
+  O: [['O', 'O'], ['O', 'O']],
+  T: [['', 'T', ''], ['T', 'T', 'T']],
+  S: [['', 'S', 'S'], ['S', 'S', '']],
+  Z: [['Z', 'Z', ''], ['', 'Z', 'Z']],
+  J: [['J', '', ''], ['J', 'J', 'J']],
+  L: [['', '', 'L'], ['L', 'L', 'L']],
+};
+const tetrisTypes = Object.keys(tetrisShapes);
+const TETRIS_COLORS = {
+  I: '#22d3ee',
+  O: '#fbbf24',
+  T: '#a78bfa',
+  S: '#34d399',
+  Z: '#f87171',
+  J: '#60a5fa',
+  L: '#fb923c',
+};
+
+const tetrisBoard = ref([]);
+const tetrisPiece = ref(null);
+const tetrisNext = ref(null);
+const tetrisScore = ref(0);
+const tetrisLevel = ref(1);
+const tetrisLines = ref(0);
+const tetrisGameOver = ref(false);
+const tetrisPaused = ref(false);
+const tetrisViewportRef = ref(null);
+const tetrisBoardSize = ref({ width: 320, height: 640 });
+let tetrisTimer = null;
+let tetrisResizeObserver = null;
 
 // --- Snake ---
 const snake = ref([{ x: 10, y: 10 }]);
@@ -16,7 +54,7 @@ const score = ref(0);
 const gameOver = ref(false);
 let gameInterval = null;
 
-const startSnake = () => { currentGame.value = 'snake'; resetSnake(); };
+const startSnake = () => { currentGame.value = 'snake'; stopTetrisTimer(); resetSnake(); };
 const resetSnake = () => {
   snake.value = [{ x: 10, y: 10 }]; direction.value = { x: 0, y: -1 }; score.value = 0; gameOver.value = false;
   spawnFood(); if (gameInterval) clearInterval(gameInterval); gameInterval = setInterval(moveSnake, 150);
@@ -41,7 +79,7 @@ const score2048 = ref(0);
 const gameOver2048 = ref(false);
 let nextId = 0;
 
-const start2048 = () => { currentGame.value = '2048'; reset2048(); };
+const start2048 = () => { currentGame.value = '2048'; stopTetrisTimer(); reset2048(); };
 const reset2048 = () => { tiles.value = []; score2048.value = 0; gameOver2048.value = false; addRandomTile(); addRandomTile(); };
 
 const addRandomTile = () => {
@@ -121,7 +159,227 @@ const checkGameOver2048 = () => {
   gameOver2048.value = true;
 };
 
+const createTetrisBoard = () =>
+  Array.from({ length: TETRIS_ROWS }, () => Array(TETRIS_COLS).fill(''));
+
+const randomTetrisPiece = () => {
+  const type = tetrisTypes[Math.floor(Math.random() * tetrisTypes.length)];
+  return {
+    type,
+    shape: tetrisShapes[type].map((row) => [...row]),
+    x: Math.floor((TETRIS_COLS - tetrisShapes[type][0].length) / 2),
+    y: 0,
+  };
+};
+
+const tetrisCollides = (board, shape, x, y) => {
+  for (let row = 0; row < shape.length; row++) {
+    for (let col = 0; col < shape[row].length; col++) {
+      if (!shape[row][col]) continue;
+      const boardX = x + col;
+      const boardY = y + row;
+      if (boardX < 0 || boardX >= TETRIS_COLS || boardY >= TETRIS_ROWS) return true;
+      if (boardY >= 0 && board[boardY][boardX]) return true;
+    }
+  }
+  return false;
+};
+
+const tetrisDisplay = computed(() => {
+  const board = tetrisBoard.value.map((row) => [...row]);
+  const piece = tetrisPiece.value;
+  if (piece) {
+    piece.shape.forEach((row, y) => {
+      row.forEach((cell, x) => {
+        if (!cell) return;
+        const boardY = piece.y + y;
+        const boardX = piece.x + x;
+        if (boardY >= 0 && boardY < TETRIS_ROWS && boardX >= 0 && boardX < TETRIS_COLS) {
+          board[boardY][boardX] = piece.type;
+        }
+      });
+    });
+  }
+  return board;
+});
+
+const tetrisNextCells = computed(() => {
+  const preview = Array.from({ length: 2 }, () => Array(4).fill(''));
+  if (!tetrisNext.value) return preview;
+  const shape = tetrisNext.value.shape;
+  const startX = Math.max(0, Math.floor((4 - shape[0].length) / 2));
+  shape.forEach((row, y) => {
+    row.forEach((cell, x) => {
+      if (cell) preview[y][startX + x] = tetrisNext.value.type;
+    });
+  });
+  return preview;
+});
+
+const updateBestTetris = () => {
+  if (tetrisScore.value > bestTetris.value) {
+    bestTetris.value = tetrisScore.value;
+    localStorage.setItem('tetris-best', bestTetris.value.toString());
+  }
+};
+
+const stopTetrisTimer = () => {
+  if (tetrisTimer) clearInterval(tetrisTimer);
+  tetrisTimer = null;
+};
+
+const restartTetrisTimer = () => {
+  stopTetrisTimer();
+  if (tetrisGameOver.value) return;
+  tetrisTimer = setInterval(() => {
+    if (!tetrisGameOver.value && !tetrisPaused.value) tetrisMove(0, 1);
+  }, Math.max(140, 700 - (tetrisLevel.value - 1) * 70));
+};
+
+const spawnTetrisPiece = () => {
+  tetrisPiece.value = tetrisNext.value || randomTetrisPiece();
+  tetrisNext.value = randomTetrisPiece();
+
+  if (tetrisCollides(tetrisBoard.value, tetrisPiece.value.shape, tetrisPiece.value.x, tetrisPiece.value.y)) {
+    tetrisGameOver.value = true;
+    tetrisPiece.value = null;
+    stopTetrisTimer();
+    updateBestTetris();
+  }
+};
+
+const lockTetrisPiece = () => {
+  if (!tetrisPiece.value) return;
+  const { shape, x, y, type } = tetrisPiece.value;
+
+  shape.forEach((row, rowIndex) => {
+    row.forEach((cell, colIndex) => {
+      if (!cell) return;
+      const boardY = y + rowIndex;
+      const boardX = x + colIndex;
+      if (boardY >= 0 && boardY < TETRIS_ROWS && boardX >= 0 && boardX < TETRIS_COLS) {
+        tetrisBoard.value[boardY][boardX] = type;
+      }
+    });
+  });
+
+  const clearedRows = tetrisBoard.value.filter((row) => row.every(Boolean)).length;
+  if (clearedRows > 0) {
+    tetrisBoard.value = tetrisBoard.value.filter((row) => !row.every(Boolean));
+    for (let i = 0; i < clearedRows; i++) {
+      tetrisBoard.value.unshift(Array(TETRIS_COLS).fill(''));
+    }
+    tetrisLines.value += clearedRows;
+    tetrisScore.value += [0, 100, 300, 500, 800][clearedRows] * tetrisLevel.value;
+    tetrisLevel.value = Math.floor(tetrisLines.value / 10) + 1;
+    updateBestTetris();
+  }
+
+  spawnTetrisPiece();
+  restartTetrisTimer();
+};
+
+const tetrisMove = (dx, dy) => {
+  if (!tetrisPiece.value || tetrisGameOver.value || tetrisPaused.value) return false;
+  const nextX = tetrisPiece.value.x + dx;
+  const nextY = tetrisPiece.value.y + dy;
+
+  if (!tetrisCollides(tetrisBoard.value, tetrisPiece.value.shape, nextX, nextY)) {
+    tetrisPiece.value = { ...tetrisPiece.value, x: nextX, y: nextY };
+    return true;
+  }
+  if (dy > 0) lockTetrisPiece();
+  return false;
+};
+
+const tetrisRotate = () => {
+  if (!tetrisPiece.value || tetrisGameOver.value || tetrisPaused.value) return;
+  const shape = tetrisPiece.value.shape;
+  const rotated = shape[0].map((_, index) => shape.map((row) => row[index]).reverse());
+  const kicks = [0, -1, 1, -2, 2];
+
+  for (const kick of kicks) {
+    const nextX = tetrisPiece.value.x + kick;
+    if (!tetrisCollides(tetrisBoard.value, rotated, nextX, tetrisPiece.value.y)) {
+      tetrisPiece.value = { ...tetrisPiece.value, shape: rotated, x: nextX };
+      return;
+    }
+  }
+};
+
+const tetrisHardDrop = () => {
+  if (!tetrisPiece.value || tetrisGameOver.value || tetrisPaused.value) return;
+  let distance = 0;
+  while (!tetrisCollides(tetrisBoard.value, tetrisPiece.value.shape, tetrisPiece.value.x, tetrisPiece.value.y + distance + 1)) {
+    distance++;
+  }
+  tetrisScore.value += distance * 2;
+  tetrisPiece.value = { ...tetrisPiece.value, y: tetrisPiece.value.y + distance };
+  lockTetrisPiece();
+  updateBestTetris();
+};
+
+const toggleTetrisPause = () => {
+  if (!tetrisGameOver.value) tetrisPaused.value = !tetrisPaused.value;
+};
+
+const resetTetris = () => {
+  stopTetrisTimer();
+  tetrisBoard.value = createTetrisBoard();
+  tetrisPiece.value = null;
+  tetrisNext.value = randomTetrisPiece();
+  tetrisScore.value = 0;
+  tetrisLevel.value = 1;
+  tetrisLines.value = 0;
+  tetrisGameOver.value = false;
+  tetrisPaused.value = false;
+  spawnTetrisPiece();
+  restartTetrisTimer();
+};
+
+const startTetris = () => {
+  currentGame.value = 'tetris';
+  resetTetris();
+};
+
+const updateTetrisBoardSize = () => {
+  const el = tetrisViewportRef.value;
+  if (!el) return;
+
+  const isNarrow = el.clientWidth < 640;
+  const sidePanelSpace = isNarrow ? 0 : 152;
+  const availWidth = Math.max(220, el.clientWidth - 32 - sidePanelSpace);
+  const availHeight = Math.max(320, el.clientHeight - 48);
+  const width = Math.min(availWidth, availHeight / 2);
+
+  tetrisBoardSize.value = {
+    width: Math.floor(width),
+    height: Math.floor(width * 2),
+  };
+};
+
+watch(currentGame, async (game) => {
+  if (game !== 'tetris') return;
+  await nextTick();
+  updateTetrisBoardSize();
+  if (tetrisResizeObserver) tetrisResizeObserver.disconnect();
+  tetrisResizeObserver = new ResizeObserver(updateTetrisBoardSize);
+  if (tetrisViewportRef.value) {
+    tetrisResizeObserver.observe(tetrisViewportRef.value);
+  }
+});
+
 const handleKey = (e) => {
+  if (windowContext && !windowContext.isActive.value) return;
+
+  const target = e.target;
+  if (
+    target instanceof HTMLElement &&
+    (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)
+  ) {
+    return;
+  }
+
   if (currentGame.value === 'snake') {
     switch (e.key) {
       case 'ArrowUp': if (direction.value.y === 0) direction.value = { x: 0, y: -1 }; break;
@@ -135,18 +393,36 @@ const handleKey = (e) => {
       const dirMap = { ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right' };
       move2048(dirMap[e.key]);
     }
+  } else if (currentGame.value === 'tetris') {
+    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) {
+      e.preventDefault();
+    }
+    switch (e.key) {
+      case 'ArrowLeft': tetrisMove(-1, 0); break;
+      case 'ArrowRight': tetrisMove(1, 0); break;
+      case 'ArrowDown': tetrisMove(0, 1); break;
+      case 'ArrowUp': tetrisRotate(); break;
+      case ' ': tetrisHardDrop(); break;
+      case 'p':
+      case 'P': toggleTetrisPause(); break;
+    }
   }
 };
 
 onMounted(() => window.addEventListener('keydown', handleKey));
-onUnmounted(() => { window.removeEventListener('keydown', handleKey); if (gameInterval) clearInterval(gameInterval); });
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleKey);
+  if (gameInterval) clearInterval(gameInterval);
+  stopTetrisTimer();
+  if (tetrisResizeObserver) tetrisResizeObserver.disconnect();
+});
 </script>
 
 <template>
   <div class="h-full bg-slate-900 text-white flex flex-col font-sans overflow-hidden select-none">
     <div class="h-14 border-b border-white/5 flex items-center px-6 justify-between shrink-0">
       <div class="flex items-center gap-3">
-        <button v-if="currentGame" @click="currentGame = null" class="p-1 hover:bg-white/10 rounded">
+        <button v-if="currentGame" @click="currentGame = null; stopTetrisTimer()" class="p-1 hover:bg-white/10 rounded">
           <ChevronLeft class="w-5 h-5" />
         </button>
         <div class="flex items-center gap-2">
@@ -157,21 +433,37 @@ onUnmounted(() => { window.removeEventListener('keydown', handleKey); if (gameIn
       <div v-if="currentGame" class="flex items-center gap-4">
         <div class="flex flex-col items-end">
           <span class="text-[9px] text-white/30 uppercase font-bold">Score</span>
-          <span class="text-sm font-mono leading-none">{{ currentGame === 'snake' ? score : score2048 }}</span>
+          <span class="text-sm font-mono leading-none">{{
+            currentGame === 'snake' ? score : currentGame === 'tetris' ? tetrisScore : score2048
+          }}</span>
         </div>
         <div class="flex flex-col items-end">
           <span class="text-[9px] text-amber-500/50 uppercase font-bold">Best</span>
-          <span class="text-sm font-mono leading-none text-amber-400">{{ currentGame === 'snake' ? bestSnake : best2048 }}</span>
+          <span class="text-sm font-mono leading-none text-amber-400">{{
+            currentGame === 'snake' ? bestSnake : currentGame === 'tetris' ? bestTetris : best2048
+          }}</span>
         </div>
-        <button @click="currentGame === 'snake' ? resetSnake() : reset2048()" class="p-2 hover:bg-white/10 rounded">
+        <button
+          v-if="currentGame === 'tetris' && !tetrisGameOver"
+          @click="toggleTetrisPause"
+          class="p-2 hover:bg-white/10 rounded"
+          title="暂停"
+        >
+          <Pause v-if="!tetrisPaused" class="w-4 h-4" />
+          <Play v-else class="w-4 h-4" />
+        </button>
+        <button
+          @click="currentGame === 'snake' ? resetSnake() : currentGame === 'tetris' ? resetTetris() : reset2048()"
+          class="p-2 hover:bg-white/10 rounded"
+        >
           <RotateCcw class="w-4 h-4" />
         </button>
       </div>
     </div>
 
-    <div class="flex-1 relative flex items-center justify-center p-8 overflow-hidden">
+    <div class="flex-1 relative flex items-start justify-center p-4 md:p-8 overflow-y-auto overflow-x-hidden">
       <!-- Select -->
-      <div v-if="!currentGame" class="grid grid-cols-2 gap-6 max-w-2xl w-full">
+      <div v-if="!currentGame" class="grid grid-cols-2 gap-6 max-w-3xl w-full">
         <div @click="startSnake" class="aspect-square bg-gradient-to-br from-indigo-600 to-indigo-900 rounded-3xl p-8 flex flex-col justify-end gap-4 cursor-pointer hover:scale-105 active:scale-95 transition-all shadow-2xl border border-white/10 group">
           <div class="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center group-hover:rotate-12 transition-transform shadow-xl text-white">
             <svg viewBox="0 0 24 24" class="w-10 h-10 fill-current"><path d="M7 7h2v2H7V7zm4 0h2v2h-2V7zm4 0h2v2h-2V7zM7 11h2v2H7v-2zm4 0h2v2h-2v-2zm4 0h2v2h-2v-2zM7 15h2v2H7v-2zm4 0h2v2h-2v-2zm4 0h2v2h-2v-2z"/></svg>
@@ -183,6 +475,12 @@ onUnmounted(() => { window.removeEventListener('keydown', handleKey); if (gameIn
             <span class="text-2xl font-black font-mono">2048</span>
           </div>
           <div><h3 class="text-xl font-bold">2048</h3><p class="text-xs text-white/50 mt-1">丝滑平移</p></div>
+        </div>
+        <div @click="startTetris" class="aspect-square bg-gradient-to-br from-cyan-600 to-blue-900 rounded-3xl p-8 flex flex-col justify-end gap-4 cursor-pointer hover:scale-105 active:scale-95 transition-all border border-white/10 shadow-2xl group text-white">
+          <div class="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-xl">
+            <Layers class="w-8 h-8" />
+          </div>
+          <div><h3 class="text-xl font-bold">俄罗斯方块</h3><p class="text-xs text-white/50 mt-1">消除行数</p></div>
         </div>
       </div>
 
@@ -236,6 +534,60 @@ onUnmounted(() => { window.removeEventListener('keydown', handleKey); if (gameIn
         <div v-if="gameOver2048" class="absolute inset-0 bg-slate-950/80 backdrop-blur flex flex-col items-center justify-center rounded-xl z-50">
           <h2 class="text-4xl font-black mb-8">无法移动</h2>
           <button @click="reset2048" class="px-8 py-3 bg-emerald-600 rounded-full font-bold">重新开始</button>
+        </div>
+      </div>
+
+      <!-- Tetris -->
+      <div
+        v-if="currentGame === 'tetris'"
+        ref="tetrisViewportRef"
+        class="w-full min-h-full flex flex-col md:flex-row items-center justify-center gap-6 animate-in fade-in zoom-in duration-500"
+      >
+        <div class="relative bg-slate-800/50 backdrop-blur rounded-xl border border-white/10 shadow-2xl p-2">
+          <div
+            class="grid grid-cols-10 grid-rows-20 gap-px overflow-hidden rounded-lg bg-slate-950/40"
+            :style="{
+              width: tetrisBoardSize.width + 'px',
+              height: tetrisBoardSize.height + 'px',
+            }"
+          >
+            <div
+              v-for="(cell, index) in tetrisDisplay.flat()"
+              :key="index"
+              class="rounded-[2px]"
+              :class="cell ? 'shadow-[inset_0_0_0_1px_rgba(255,255,255,0.12)]' : 'bg-white/5'"
+              :style="cell ? { backgroundColor: TETRIS_COLORS[cell] || '#38bdf8' } : {}"
+            ></div>
+          </div>
+
+          <div v-if="tetrisGameOver" class="absolute inset-0 bg-slate-950/85 backdrop-blur flex flex-col items-center justify-center rounded-xl z-50">
+            <h2 class="text-4xl font-black mb-8">GAME OVER</h2>
+            <button @click="resetTetris" class="px-8 py-3 bg-cyan-600 rounded-full font-bold">再来一局</button>
+          </div>
+          <div v-else-if="tetrisPaused" class="absolute inset-0 bg-slate-950/80 backdrop-blur flex flex-col items-center justify-center rounded-xl z-50">
+            <h2 class="text-4xl font-black mb-8">已暂停</h2>
+            <button @click="toggleTetrisPause" class="px-8 py-3 bg-cyan-600 rounded-full font-bold">继续</button>
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-4 w-28">
+          <div class="bg-white/5 border border-white/10 rounded-xl p-3">
+            <div class="text-[10px] text-white/40 uppercase font-bold">Next</div>
+            <div class="grid grid-cols-4 grid-rows-2 gap-1 w-20 h-10 mt-2">
+              <div
+                v-for="(cell, index) in tetrisNextCells.flat()"
+                :key="index"
+                class="rounded-sm"
+                :class="cell ? '' : 'bg-white/5'"
+                :style="cell ? { backgroundColor: TETRIS_COLORS[cell] || '#38bdf8' } : {}"
+              ></div>
+            </div>
+          </div>
+          <div class="bg-white/5 border border-white/10 rounded-xl p-3 space-y-2 text-xs">
+            <div class="flex justify-between"><span class="text-white/40">Level</span><span class="font-mono">{{ tetrisLevel }}</span></div>
+            <div class="flex justify-between"><span class="text-white/40">Lines</span><span class="font-mono">{{ tetrisLines }}</span></div>
+            <div class="flex justify-between"><span class="text-white/40">Score</span><span class="font-mono text-cyan-300">{{ tetrisScore }}</span></div>
+          </div>
         </div>
       </div>
     </div>

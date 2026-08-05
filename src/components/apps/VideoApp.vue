@@ -42,16 +42,32 @@ const shortVideoTypes = [
   },
 ];
 
+const fallbackVideos = [
+  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+];
+
 const currentType = ref(shortVideoTypes[0]);
 const videoUrl = ref('');
 const isLoading = ref(true);
 const loadError = ref(false);
+let sourceAttempt = 0;
 
-const refreshVideo = () => {
+const getVideoCandidates = () => [currentType.value.api, ...fallbackVideos];
+
+const refreshVideo = (attempt = 0) => {
+  sourceAttempt = attempt;
+  const candidates = getVideoCandidates();
+  if (attempt >= candidates.length) {
+    isLoading.value = false;
+    loadError.value = true;
+    return;
+  }
+
   isLoading.value = true;
   loadError.value = false;
   const timestamp = new Date().getTime();
-  const api = currentType.value.api;
+  const api = candidates[attempt];
   const separator = api.includes('?') ? '&' : '?';
   videoUrl.value = `${api}${separator}_t=${timestamp}`;
   isPlaying.value = false;
@@ -60,7 +76,7 @@ const refreshVideo = () => {
 
 const selectType = (type) => {
   currentType.value = type;
-  refreshVideo();
+  refreshVideo(0);
 };
 
 const togglePlay = () => {
@@ -80,9 +96,14 @@ const onVideoPlay = () => {
 };
 
 const onVideoError = () => {
-  isLoading.value = false;
-  loadError.value = true;
-  console.error('Video loading failed or timed out.');
+  const candidates = getVideoCandidates();
+  if (sourceAttempt < candidates.length - 1) {
+    refreshVideo(sourceAttempt + 1);
+  } else {
+    isLoading.value = false;
+    loadError.value = true;
+    console.error('Video loading failed or timed out.');
+  }
 };
 
 const handleMouseMove = () => {

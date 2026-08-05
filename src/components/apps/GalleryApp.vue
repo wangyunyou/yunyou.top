@@ -5,9 +5,7 @@ import {
   RefreshCw,
   Download,
   Heart,
-  Share2,
   Sparkles,
-  LayoutGrid,
 } from 'lucide-vue-next';
 
 const imageSrc = ref('');
@@ -21,12 +19,24 @@ const sources = [
   { name: '高清自然', api: 'https://picsum.photos/1080/1920?' },
 ];
 
+const fallbackImages = [
+  'https://picsum.photos/1080/1920?sig=1',
+  'https://picsum.photos/1080/1920?sig=2',
+  '/fallback-gallery.svg',
+];
+
 const currentSource = ref(sources[0]);
 
-const refreshImage = (retryCount = 0) => {
+const refreshImage = (candidateIndex = 0) => {
+  const candidates = [currentSource.value.api, ...fallbackImages];
+  if (candidateIndex >= candidates.length) {
+    isLoading.value = false;
+    return;
+  }
+
   isLoading.value = true;
   const timestamp = new Date().getTime();
-  const api = currentSource.value.api;
+  const api = candidates[candidateIndex];
   const newSrc = api.includes('?') ? `${api}t=${timestamp}` : `${api}?t=${timestamp}`;
 
   const img = new Image();
@@ -38,14 +48,7 @@ const refreshImage = (retryCount = 0) => {
     if (history.value.length > 20) history.value.pop();
   };
   img.onerror = () => {
-    if (retryCount < 2) {
-      // Automatic retry once
-      setTimeout(() => refreshImage(retryCount + 1), 500);
-    } else {
-      isLoading.value = false;
-      // If primary fails, try a very reliable fallback
-      imageSrc.value = `https://picsum.photos/1080/1920?sig=${timestamp}`;
-    }
+    setTimeout(() => refreshImage(candidateIndex + 1), 400);
   };
 };
 
