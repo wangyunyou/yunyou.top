@@ -7,6 +7,11 @@ export const useWindowStore = defineStore('window', () => {
   const zIndexCounter = ref(10);
   const STORAGE_KEY = 'yunyou-windows';
 
+  const getDefaultWindowSize = () => ({
+    width: 1100,
+    height: 760,
+  });
+
   const saveWindows = () => {
     try {
       localStorage.setItem(
@@ -42,20 +47,23 @@ export const useWindowStore = defineStore('window', () => {
 
     windows.value = savedWindows
       .filter((item) => resolveComponent(item.componentName))
-      .map((item, index) => ({
-        id: item.id,
-        title: item.title,
-        component: resolveComponent(item.componentName),
-        componentName: item.componentName,
-        props: item.props || {},
-        x: Number(item.x) || 0,
-        y: Number(item.y) || 0,
-        width: Number(item.width) || 800,
-        height: Number(item.height) || 600,
-        isMinimized: Boolean(item.isMinimized),
-        isMaximized: Boolean(item.isMaximized),
-        zIndex: 10 + index,
-      }));
+      .map((item, index) => {
+        const defaultSize = getDefaultWindowSize();
+        return {
+          id: item.id,
+          title: item.title,
+          component: resolveComponent(item.componentName),
+          componentName: item.componentName,
+          props: item.props || {},
+          x: Number(item.x) || 0,
+          y: Number(item.y) || 0,
+          width: defaultSize.width,
+          height: defaultSize.height,
+          isMinimized: Boolean(item.isMinimized),
+          isMaximized: Boolean(item.isMaximized),
+          zIndex: 10 + index,
+        };
+      });
 
     if (windows.value.length > 0) {
       activeWindowId.value = windows.value[windows.value.length - 1].id;
@@ -67,9 +75,12 @@ export const useWindowStore = defineStore('window', () => {
 
   // Actions
   const openWindow = (appId, title, component, componentName = null, props = {}, size = {}) => {
+    const defaultSize = getDefaultWindowSize();
     // Check if already open
     const existing = windows.value.find((w) => w.id === appId);
     if (existing) {
+      existing.width = defaultSize.width;
+      existing.height = defaultSize.height;
       focusWindow(existing.id);
       if (existing.isMinimized) {
         existing.isMinimized = false;
@@ -80,8 +91,8 @@ export const useWindowStore = defineStore('window', () => {
 
     // Spawn random position slightly offset
     const offset = windows.value.length * 20;
-    const initialWidth = size.width || 800;
-    const initialHeight = size.height || 600;
+    const initialWidth = size.width || defaultSize.width;
+    const initialHeight = size.height || defaultSize.height;
     // Center it roughly
     const x = (window.innerWidth - initialWidth) / 2 + offset;
     const y = (window.innerHeight - initialHeight) / 2 + offset;

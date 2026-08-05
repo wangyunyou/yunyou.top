@@ -22,17 +22,10 @@ const configStore = useConfigStore();
 
 const appMap = appRegistry;
 
-const appSizes = {
-  GameCenterApp: {
-    width: Math.max(320, Math.min(1100, window.innerWidth - 80)),
-    height: Math.max(480, Math.min(760, window.innerHeight - 80)),
-  },
-};
-
 const openApp = (id, title, componentName) => {
   const comp = appMap[componentName];
   if (comp) {
-    windowStore.openWindow(id, title, comp, componentName, {}, appSizes[componentName] || {});
+    windowStore.openWindow(id, title, comp, componentName);
   }
 };
 
