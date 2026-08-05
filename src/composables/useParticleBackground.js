@@ -4,9 +4,9 @@ export function useParticleBackground(canvasRef) {
   const mouse = ref({ x: -1000, y: -1000 });
   let ctx, width, height, animId;
   let particles = [];
-  const PARTICLE_COUNT = 80;
-  const CONNECTION_DIST = 120;
-  const MOUSE_RADIUS = 180;
+  const PARTICLE_COUNT = 48;
+  const CONNECTION_DIST = 110;
+  const MOUSE_RADIUS = 160;
 
   const colors = [
     { r: 56, g: 189, b: 248 },  // sky-400
@@ -25,9 +25,9 @@ export function useParticleBackground(canvasRef) {
       this.y = initial ? Math.random() * height : Math.random() * height;
       this.vx = (Math.random() - 0.5) * 0.6;
       this.vy = (Math.random() - 0.5) * 0.6;
-      this.size = Math.random() * 2.5 + 1;
+      this.size = Math.random() * 1.8 + 0.8;
       this.color = colors[Math.floor(Math.random() * colors.length)];
-      this.opacity = Math.random() * 0.6 + 0.2;
+      this.opacity = Math.random() * 0.5 + 0.15;
     }
     update() {
       this.x += this.vx;
@@ -94,7 +94,7 @@ export function useParticleBackground(canvasRef) {
         const dy = particles[i].y - particles[j].y;
         const dist = Math.sqrt(dx * dx + dy * dy);
         if (dist < CONNECTION_DIST) {
-          const alpha = (1 - dist / CONNECTION_DIST) * 0.18;
+          const alpha = (1 - dist / CONNECTION_DIST) * 0.12;
           const midColor = {
             r: Math.round((particles[i].color.r + particles[j].color.r) / 2),
             g: Math.round((particles[i].color.g + particles[j].color.g) / 2),
