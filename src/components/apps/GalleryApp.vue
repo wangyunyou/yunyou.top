@@ -147,7 +147,7 @@ onMounted(() => {
               class="w-10 h-10 border-4 border-pink-500/20 border-t-pink-500 rounded-full animate-spin"
             ></div>
             <div
-              class="text-[10px] text-pink-400 font-bold tracking-widest animate-pulse"
+              class="text-[10px] text-pink-400 font-bold tracking-widest animate-pulse whitespace-nowrap"
             >
               资源同步中...
             </div>
