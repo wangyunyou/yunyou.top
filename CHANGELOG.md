@@ -17,6 +17,7 @@
 ### Fixed
 - `presenceStore.initPresence()` 重复初始化调用
 - 杂志页 reveal 入场动画在部分情况下卡片不可见的问题
+- 云优 AI 通讯中断：未配置 ZHIPU_API_KEY 时前端解析空响应体报错
 
 ### Changed
 - `Window.vue` 根元素增加 `pointer-events-auto`

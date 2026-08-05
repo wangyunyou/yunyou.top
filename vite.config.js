@@ -32,6 +32,21 @@ async function handleAiProxy(req, res, zhipuKey) {
       body,
     });
 
+    if (!upstream.ok) {
+      const upstreamText = await upstream.text();
+      let message = 'AI 服务返回错误';
+      try {
+        const upstreamJson = JSON.parse(upstreamText);
+        message = upstreamJson.error?.message || upstreamJson.message || upstreamText || message;
+      } catch {
+        message = upstreamText || message;
+      }
+      res.statusCode = upstream.status;
+      res.setHeader('Content-Type', 'application/json; charset=utf-8');
+      res.end(JSON.stringify({ error: { message } }));
+      return;
+    }
+
     res.statusCode = upstream.status;
     res.setHeader('Content-Type', upstream.headers.get('content-type') || 'application/json');
     res.setHeader('Cache-Control', 'no-cache');

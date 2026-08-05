@@ -78,8 +78,19 @@ const sendMessage = async () => {
     });
 
     if (!response.ok) {
-      const err = await response.json();
-      throw new Error(err.error?.message || '网络连接异常');
+      let message = '网络连接异常';
+      try {
+        const text = await response.text();
+        if (text) {
+          const parsed = JSON.parse(text);
+          message = parsed.error?.message || parsed.message || text;
+        } else {
+          message = `请求失败 (${response.status})`;
+        }
+      } catch {
+        message = `请求失败 (${response.status})`;
+      }
+      throw new Error(message);
     }
 
     const reader = response.body.getReader();
@@ -113,7 +124,11 @@ const sendMessage = async () => {
       }
     }
   } catch (error) {
-    messages.value[assistantMessageIndex].content = `抱歉，通讯中断：${error.message}`;
+    let display = `抱歉，通讯中断：${error.message}`;
+    if (error.message.includes('ZHIPU_API_KEY') || error.message.includes('未配置')) {
+      display += '。请在项目根目录创建 .env.local 并填写 ZHIPU_API_KEY=你的智谱 API Key，然后重启服务。';
+    }
+    messages.value[assistantMessageIndex].content = display;
   } finally {
     isTyping.value = false;
     scrollToBottom();
