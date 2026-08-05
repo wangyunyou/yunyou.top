@@ -10,6 +10,20 @@ const bestSnake = ref(parseInt(localStorage.getItem('snake-best') || '0'));
 const best2048 = ref(parseInt(localStorage.getItem('2048-best') || '0'));
 const bestTetris = ref(parseInt(localStorage.getItem('tetris-best') || '0'));
 
+// --- Responsive Game Sizes ---
+const snakeCellSize = ref(20);
+const board2048Size = ref(320);
+const tile2048Step = computed(() => Math.floor((board2048Size.value - 8) / 4));
+const tile2048Size = computed(() => tile2048Step.value - 4);
+
+const updateGameSizes = () => {
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  const snakeAvail = Math.min(vw - 32, vh - 180);
+  snakeCellSize.value = Math.max(12, Math.min(20, Math.floor(snakeAvail / 20)));
+  board2048Size.value = Math.min(320, vw - 48);
+};
+
 // --- Tetris ---
 const TETRIS_COLS = 10;
 const TETRIS_ROWS = 20;
@@ -409,8 +423,44 @@ const handleKey = (e) => {
   }
 };
 
-onMounted(() => window.addEventListener('keydown', handleKey));
+// --- Touch Controls ---
+let touchStartX = 0;
+let touchStartY = 0;
+
+const handleTouchStart = (e) => {
+  touchStartX = e.touches[0].clientX;
+  touchStartY = e.touches[0].clientY;
+};
+
+const handleTouchEnd = (e) => {
+  const dx = e.changedTouches[0].clientX - touchStartX;
+  const dy = e.changedTouches[0].clientY - touchStartY;
+  const absDx = Math.abs(dx);
+  const absDy = Math.abs(dy);
+  const threshold = 20;
+  if (absDx < threshold && absDy < threshold) return;
+
+  if (currentGame.value === 'snake') {
+    if (absDx > absDy) {
+      if (dx > 0 && direction.value.x === 0) direction.value = { x: 1, y: 0 };
+      else if (dx < 0 && direction.value.x === 0) direction.value = { x: -1, y: 0 };
+    } else {
+      if (dy > 0 && direction.value.y === 0) direction.value = { x: 0, y: 1 };
+      else if (dy < 0 && direction.value.y === 0) direction.value = { x: 0, y: -1 };
+    }
+  } else if (currentGame.value === '2048') {
+    if (absDx > absDy) move2048(dx > 0 ? 'right' : 'left');
+    else move2048(dy > 0 ? 'down' : 'up');
+  }
+};
+
+onMounted(() => {
+  updateGameSizes();
+  window.addEventListener('resize', updateGameSizes);
+  window.addEventListener('keydown', handleKey);
+});
 onUnmounted(() => {
+  window.removeEventListener('resize', updateGameSizes);
   window.removeEventListener('keydown', handleKey);
   if (gameInterval) clearInterval(gameInterval);
   stopTetrisTimer();
@@ -420,7 +470,7 @@ onUnmounted(() => {
 
 <template>
   <div class="h-full bg-slate-900 text-white flex flex-col font-sans overflow-hidden select-none">
-    <div class="h-14 border-b border-white/5 flex items-center px-6 justify-between shrink-0">
+    <div class="h-14 border-b border-white/5 flex items-center px-3 md:px-6 justify-between shrink-0">
       <div class="flex items-center gap-3">
         <button v-if="currentGame" @click="currentGame = null; stopTetrisTimer()" class="p-1 hover:bg-white/10 rounded">
           <ChevronLeft class="w-5 h-5" />
@@ -463,32 +513,32 @@ onUnmounted(() => {
 
     <div class="flex-1 relative flex items-start justify-center p-4 md:p-8 overflow-y-auto overflow-x-hidden">
       <!-- Select -->
-      <div v-if="!currentGame" class="grid grid-cols-2 gap-6 max-w-3xl w-full">
-        <div @click="startSnake" class="aspect-square bg-gradient-to-br from-indigo-600 to-indigo-900 rounded-3xl p-8 flex flex-col justify-end gap-4 cursor-pointer hover:scale-105 active:scale-95 transition-all shadow-2xl border border-white/10 group">
-          <div class="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center group-hover:rotate-12 transition-transform shadow-xl text-white">
-            <svg viewBox="0 0 24 24" class="w-10 h-10 fill-current"><path d="M7 7h2v2H7V7zm4 0h2v2h-2V7zm4 0h2v2h-2V7zM7 11h2v2H7v-2zm4 0h2v2h-2v-2zm4 0h2v2h-2v-2zM7 15h2v2H7v-2zm4 0h2v2h-2v-2zm4 0h2v2h-2v-2z"/></svg>
+      <div v-if="!currentGame" class="grid grid-cols-2 gap-3 md:gap-6 max-w-3xl w-full">
+        <div @click="startSnake" class="aspect-square bg-gradient-to-br from-indigo-600 to-indigo-900 rounded-2xl md:rounded-3xl p-4 md:p-8 flex flex-col justify-end gap-3 md:gap-4 cursor-pointer hover:scale-105 active:scale-95 transition-all shadow-2xl border border-white/10 group">
+          <div class="w-12 h-12 md:w-16 md:h-16 bg-white/10 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:rotate-12 transition-transform shadow-xl text-white">
+            <svg viewBox="0 0 24 24" class="w-8 h-8 md:w-10 md:h-10 fill-current"><path d="M7 7h2v2H7V7zm4 0h2v2h-2V7zm4 0h2v2h-2V7zM7 11h2v2H7v-2zm4 0h2v2h-2v-2zm4 0h2v2h-2v-2zM7 15h2v2H7v-2zm4 0h2v2h-2v-2zm4 0h2v2h-2v-2z"/></svg>
           </div>
-          <div><h3 class="text-xl font-bold">贪吃蛇</h3><p class="text-xs text-white/50 mt-1">挑战极限</p></div>
+          <div><h3 class="text-base md:text-xl font-bold">贪吃蛇</h3><p class="text-xs text-white/50 mt-1">挑战极限</p></div>
         </div>
-        <div @click="start2048" class="aspect-square bg-gradient-to-br from-emerald-600 to-emerald-900 rounded-3xl p-8 flex flex-col justify-end gap-4 cursor-pointer hover:scale-105 active:scale-95 transition-all border border-white/10 shadow-2xl group text-white">
-          <div class="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center group-hover:-rotate-12 transition-transform shadow-xl">
-            <span class="text-2xl font-black font-mono">2048</span>
+        <div @click="start2048" class="aspect-square bg-gradient-to-br from-emerald-600 to-emerald-900 rounded-2xl md:rounded-3xl p-4 md:p-8 flex flex-col justify-end gap-3 md:gap-4 cursor-pointer hover:scale-105 active:scale-95 transition-all border border-white/10 shadow-2xl group text-white">
+          <div class="w-12 h-12 md:w-16 md:h-16 bg-white/10 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:-rotate-12 transition-transform shadow-xl">
+            <span class="text-xl md:text-2xl font-black font-mono">2048</span>
           </div>
-          <div><h3 class="text-xl font-bold">2048</h3><p class="text-xs text-white/50 mt-1">丝滑平移</p></div>
+          <div><h3 class="text-base md:text-xl font-bold">2048</h3><p class="text-xs text-white/50 mt-1">丝滑平移</p></div>
         </div>
-        <div @click="startTetris" class="aspect-square bg-gradient-to-br from-cyan-600 to-blue-900 rounded-3xl p-8 flex flex-col justify-end gap-4 cursor-pointer hover:scale-105 active:scale-95 transition-all border border-white/10 shadow-2xl group text-white">
-          <div class="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-xl">
-            <Layers class="w-8 h-8" />
+        <div @click="startTetris" class="aspect-square bg-gradient-to-br from-cyan-600 to-blue-900 rounded-2xl md:rounded-3xl p-4 md:p-8 flex flex-col justify-end gap-3 md:gap-4 cursor-pointer hover:scale-105 active:scale-95 transition-all border border-white/10 shadow-2xl group text-white">
+          <div class="w-12 h-12 md:w-16 md:h-16 bg-white/10 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-xl">
+            <Layers class="w-6 h-6 md:w-8 md:h-8" />
           </div>
-          <div><h3 class="text-xl font-bold">俄罗斯方块</h3><p class="text-xs text-white/50 mt-1">消除行数</p></div>
+          <div><h3 class="text-base md:text-xl font-bold">俄罗斯方块</h3><p class="text-xs text-white/50 mt-1">消除行数</p></div>
         </div>
       </div>
 
       <!-- Snake -->
-      <div v-if="currentGame === 'snake'" class="relative animate-in fade-in zoom-in duration-500">
-        <div class="grid grid-cols-20 grid-rows-20 w-[400px] h-[400px] bg-slate-800/50 backdrop-blur rounded-xl border border-white/10 shadow-2xl relative overflow-hidden">
-          <div class="absolute w-[18px] h-[18px] bg-rose-500 rounded-full" :style="{ left: food.x * 20 + 1 + 'px', top: food.y * 20 + 1 + 'px' }"></div>
-          <div v-for="(seg, i) in snake" :key="i" class="absolute w-[18px] h-[18px] rounded-[4px] transition-all duration-150" :class="i === 0 ? 'bg-indigo-400 z-10' : 'bg-indigo-600/60'" :style="{ left: seg.x * 20 + 1 + 'px', top: seg.y * 20 + 1 + 'px' }"></div>
+      <div v-if="currentGame === 'snake'" class="relative animate-in fade-in zoom-in duration-500" @touchstart.passive="handleTouchStart" @touchmove.prevent @touchend.passive="handleTouchEnd">
+        <div class="grid grid-cols-20 grid-rows-20 bg-slate-800/50 backdrop-blur rounded-xl border border-white/10 shadow-2xl relative overflow-hidden" :style="{ width: snakeCellSize * 20 + 'px', height: snakeCellSize * 20 + 'px' }">
+          <div class="absolute bg-rose-500 rounded-full" :style="{ width: snakeCellSize - 2 + 'px', height: snakeCellSize - 2 + 'px', left: food.x * snakeCellSize + 1 + 'px', top: food.y * snakeCellSize + 1 + 'px' }"></div>
+          <div v-for="(seg, i) in snake" :key="i" class="absolute rounded-[4px] transition-all duration-150" :class="i === 0 ? 'bg-indigo-400 z-10' : 'bg-indigo-600/60'" :style="{ width: snakeCellSize - 2 + 'px', height: snakeCellSize - 2 + 'px', left: seg.x * snakeCellSize + 1 + 'px', top: seg.y * snakeCellSize + 1 + 'px' }"></div>
         </div>
         <div v-if="gameOver" class="absolute inset-0 bg-slate-950/80 backdrop-blur flex flex-col items-center justify-center rounded-xl z-50">
           <h2 class="text-4xl font-black mb-2">GAME OVER</h2>
@@ -497,8 +547,8 @@ onUnmounted(() => {
       </div>
 
       <!-- 2048 -->
-      <div v-if="currentGame === '2048'" class="flex flex-col items-center gap-6 animate-in fade-in zoom-in duration-500">
-        <div class="relative bg-slate-800/50 backdrop-blur rounded-2xl border border-white/10 shadow-2xl w-[320px] h-[320px] p-2 overflow-hidden">
+      <div v-if="currentGame === '2048'" class="flex flex-col items-center gap-4 md:gap-6 animate-in fade-in zoom-in duration-500 relative" @touchstart.passive="handleTouchStart" @touchmove.prevent @touchend.passive="handleTouchEnd">
+        <div class="relative bg-slate-800/50 backdrop-blur rounded-2xl border border-white/10 shadow-2xl p-2 overflow-hidden" :style="{ width: board2048Size + 'px', height: board2048Size + 'px' }">
           <div class="grid grid-cols-4 grid-rows-4 gap-2 h-full w-full">
             <div v-for="i in 16" :key="i" class="bg-white/5 rounded-xl"></div>
           </div>
@@ -507,7 +557,14 @@ onUnmounted(() => {
               <div 
                 v-for="tile in tiles" 
                 :key="tile.id"
-                class="absolute w-[73px] h-[73px] rounded-xl flex items-center justify-center text-xl font-black transition-all duration-100 ease-in-out"
+                class="absolute rounded-xl flex items-center justify-center font-black transition-all duration-100 ease-in-out"
+                :style="{ 
+                  width: tile2048Size + 'px',
+                  height: tile2048Size + 'px',
+                  fontSize: tile2048Size > 60 ? '1.25rem' : '1rem',
+                  transform: `translate3d(${tile.c * tile2048Step}px, ${tile.r * tile2048Step}px, 0)`,
+                  opacity: tile.mergedInto ? 0 : 1
+                }"
                 :class="{
                   'bg-emerald-500 shadow-[0_0_15px_#10b981] z-20': tile.val >= 2048,
                   'bg-amber-500 shadow-[0_0_10px_#f59e0b]': tile.val === 1024,
@@ -520,10 +577,6 @@ onUnmounted(() => {
                   'bg-emerald-600/80': tile.val === 8,
                   'bg-white/30 text-white': tile.val === 4,
                   'bg-white/20 text-white/80': tile.val === 2,
-                }"
-                :style="{ 
-                  transform: `translate3d(${tile.c * 77}px, ${tile.r * 77}px, 0)`,
-                  opacity: tile.mergedInto ? 0 : 1
                 }"
               >
                 {{ tile.val }}
@@ -588,6 +641,16 @@ onUnmounted(() => {
             <div class="flex justify-between"><span class="text-white/40">Lines</span><span class="font-mono">{{ tetrisLines }}</span></div>
             <div class="flex justify-between"><span class="text-white/40">Score</span><span class="font-mono text-cyan-300">{{ tetrisScore }}</span></div>
           </div>
+        </div>
+
+        <!-- Touch Controls (mobile only) -->
+        <div class="md:hidden grid grid-cols-3 gap-2 w-full max-w-[240px]">
+          <button @click="tetrisMove(-1, 0)" class="aspect-square bg-white/5 active:bg-white/20 rounded-xl flex items-center justify-center text-2xl border border-white/10 select-none">←</button>
+          <button @click="tetrisRotate" class="aspect-square bg-white/5 active:bg-white/20 rounded-xl flex items-center justify-center text-2xl border border-white/10 select-none">⟳</button>
+          <button @click="tetrisMove(1, 0)" class="aspect-square bg-white/5 active:bg-white/20 rounded-xl flex items-center justify-center text-2xl border border-white/10 select-none">→</button>
+          <button @click="tetrisMove(0, 1)" class="aspect-square bg-white/5 active:bg-white/20 rounded-xl flex items-center justify-center text-2xl border border-white/10 select-none">↓</button>
+          <button @click="tetrisHardDrop" class="aspect-square bg-cyan-500/10 active:bg-cyan-500/30 rounded-xl flex items-center justify-center text-2xl border border-cyan-400/20 select-none">⤓</button>
+          <button @click="toggleTetrisPause" class="aspect-square bg-white/5 active:bg-white/20 rounded-xl flex items-center justify-center text-2xl border border-white/10 select-none">⏸</button>
         </div>
       </div>
     </div>

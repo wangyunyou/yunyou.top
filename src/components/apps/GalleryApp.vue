@@ -78,14 +78,14 @@ onMounted(() => {
   <div class="h-full bg-slate-950 flex flex-col select-none overflow-hidden">
     <!-- Header -->
     <div
-      class="p-4 border-b border-white/5 bg-slate-900/80 backdrop-blur-md flex items-center justify-between z-10"
+      class="p-3 md:p-4 border-b border-white/5 bg-slate-900/80 backdrop-blur-md z-10"
     >
-      <div class="flex items-center gap-6">
-        <div class="flex items-center gap-3">
+      <div class="flex items-center gap-3">
+        <div class="flex items-center gap-3 shrink-0">
           <div class="p-2 bg-pink-500/20 rounded-lg text-pink-400">
             <Sparkles class="w-5 h-5" />
           </div>
-          <div>
+          <div class="hidden sm:block">
             <h3 class="text-white font-bold text-sm">云优美图赏析</h3>
             <p class="text-[9px] text-slate-500 uppercase tracking-widest">
               多源负载均衡中
@@ -93,13 +93,13 @@ onMounted(() => {
           </div>
         </div>
 
-        <!-- Source Selector -->
-        <div class="hidden md:flex bg-white/5 rounded-xl p-1 gap-1">
+        <!-- Source Selector - always visible, horizontal scroll on mobile -->
+        <div class="flex-1 flex bg-white/5 rounded-xl p-1 gap-1 overflow-x-auto scrollbar-none min-w-0">
           <button
             v-for="source in sources"
             :key="source.name"
             @click="selectSource(source)"
-            class="px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all"
+            class="px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all whitespace-nowrap shrink-0"
             :class="
               currentSource.name === source.name
                 ? 'bg-pink-500 text-white shadow-lg shadow-pink-500/20'
@@ -109,16 +109,16 @@ onMounted(() => {
             {{ source.name }}
           </button>
         </div>
-      </div>
 
-      <button
-        @click="refreshImage"
-        :disabled="isLoading"
-        class="flex items-center gap-2 px-4 py-2 bg-pink-500 hover:bg-pink-400 disabled:opacity-50 text-white rounded-xl text-xs font-bold transition-all shadow-lg shadow-pink-500/20"
-      >
-        <RefreshCw class="w-4 h-4" :class="isLoading ? 'animate-spin' : ''" />
-        下一张
-      </button>
+        <button
+          @click="refreshImage"
+          :disabled="isLoading"
+          class="shrink-0 flex items-center gap-2 px-3 md:px-4 py-2 bg-pink-500 hover:bg-pink-400 disabled:opacity-50 text-white rounded-xl text-xs font-bold transition-all shadow-lg shadow-pink-500/20"
+        >
+          <RefreshCw class="w-4 h-4" :class="isLoading ? 'animate-spin' : ''" />
+          <span class="hidden sm:inline">下一张</span>
+        </button>
+      </div>
     </div>
 
     <!-- Image Viewer -->
@@ -161,9 +161,9 @@ onMounted(() => {
           alt="Discovery"
         />
 
-        <!-- Hover Controls -->
+        <!-- Hover Controls - always visible on mobile, hover on desktop -->
         <div
-          class="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-4 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0"
+          class="absolute bottom-4 md:bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-4 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-300 translate-y-0 md:translate-y-2 md:group-hover:translate-y-0"
         >
           <button
             class="p-3 bg-white/10 backdrop-blur-xl rounded-full text-white hover:bg-pink-500 transition-colors shadow-2xl border border-white/10"

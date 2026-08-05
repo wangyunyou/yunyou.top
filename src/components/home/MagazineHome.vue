@@ -1,14 +1,11 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { useWindowStore } from '../../stores/windowStore';
 import { usePresenceStore } from '../../stores/presenceStore';
 import { useConfigStore } from '../../stores/configStore';
-import { appRegistry } from '../../lib/appRegistry';
 import { useParticleBackground } from '../../composables/useParticleBackground';
 import { useTilt } from '../../composables/useTilt';
 import { useMouseParallax } from '../../composables/useMouseParallax';
-import Window from '../os/Window.vue';
 import {
   MessagesSquare,
   Sparkles,
@@ -26,7 +23,6 @@ import {
 } from 'lucide-vue-next';
 
 const router = useRouter();
-const windowStore = useWindowStore();
 const presenceStore = usePresenceStore();
 const configStore = useConfigStore();
 const { offsetX, offsetY } = useMouseParallax();
@@ -53,6 +49,7 @@ const apps = [
     gradient: 'from-cyan-400 to-blue-500',
     glow: 'rgba(34, 211, 238, 0.45)',
     gridClass: 'md:col-span-5 md:row-span-2',
+    component: 'ChatApp',
     route: '/chat',
   },
   {
@@ -66,6 +63,7 @@ const apps = [
     glow: 'rgba(167, 139, 250, 0.45)',
     gridClass: 'md:col-span-5 md:row-span-2',
     component: 'AIApp',
+    route: '/ai',
   },
   {
     id: 'video',
@@ -78,6 +76,7 @@ const apps = [
     glow: 'rgba(251, 113, 133, 0.45)',
     gridClass: 'md:col-span-4 md:row-span-3',
     component: 'VideoApp',
+    route: '/video',
   },
   {
     id: 'gallery',
@@ -90,6 +89,7 @@ const apps = [
     glow: 'rgba(252, 211, 77, 0.45)',
     gridClass: 'md:col-span-4 md:row-span-3',
     component: 'GalleryApp',
+    route: '/gallery',
   },
   {
     id: 'game',
@@ -102,6 +102,7 @@ const apps = [
     glow: 'rgba(129, 140, 248, 0.45)',
     gridClass: 'md:col-span-4 md:row-span-3',
     component: 'GameCenterApp',
+    route: '/game',
   },
   {
     id: 'music',
@@ -114,6 +115,7 @@ const apps = [
     glow: 'rgba(244, 114, 182, 0.45)',
     gridClass: 'md:col-span-5 md:row-span-2',
     component: 'MusicApp',
+    route: '/music',
   },
 ];
 
@@ -129,6 +131,7 @@ const smallCards = [
     glow: 'rgba(52, 211, 153, 0.45)',
     gridClass: 'md:col-span-3 md:row-span-2',
     component: 'SystemMonitorApp',
+    route: '/monitor',
   },
   {
     id: 'settings',
@@ -141,6 +144,7 @@ const smallCards = [
     glow: 'rgba(148, 163, 184, 0.35)',
     gridClass: 'md:col-span-4 md:row-span-1',
     component: 'SettingsApp',
+    route: '/settings',
   },
   {
     id: 'github',
@@ -177,10 +181,6 @@ const openApp = (app) => {
   if (app.href) {
     window.open(app.href, '_blank');
     return;
-  }
-  const comp = appRegistry[app.component];
-  if (comp) {
-    windowStore.openWindow(app.id, app.title, comp, app.component);
   }
 };
 
@@ -589,11 +589,6 @@ const heroGlowStyle = computed(() => ({
           </div>
         </div>
       </main>
-    </div>
-
-    <!-- ===== Windows Layer ===== -->
-    <div class="absolute inset-0 z-[60] pointer-events-none">
-      <Window v-for="win in windowStore.windows" :key="win.id" :window="win" />
     </div>
   </div>
 </template>
