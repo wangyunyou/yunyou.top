@@ -1,17 +1,18 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import Desktop from '../components/os/Desktop.vue';
+import MagazineHome from '../components/home/MagazineHome.vue';
 
 const routes = [
   {
     path: '/',
-    name: 'OS',
-    component: Desktop
+    name: 'Home',
+    component: MagazineHome,
+    meta: { fullScreen: true }
   },
   {
     path: '/chat',
     name: 'Chat',
     component: () => import('../components/apps/ChatApp.vue'),
-    meta: { fullScreen: true } // 标记这个组件需要全屏（不带 OS 外壳）
+    meta: { fullScreen: true }
   }
 ];
 

@@ -93,7 +93,7 @@ const handleMouseDown = () => {
   <div
     ref="windowRef"
     v-show="!window.isMinimized"
-    class="absolute flex flex-col overflow-hidden shadow-2xl border select-none"
+    class="absolute flex flex-col overflow-hidden shadow-2xl border select-none pointer-events-auto"
     :class="[
       isActive 
         ? 'border-white/20 ring-1 ring-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-50' 
