@@ -20,6 +20,7 @@ import {
   ArrowDown,
   Quote,
   Zap,
+  Rocket,
 } from 'lucide-vue-next';
 
 const router = useRouter();
@@ -33,7 +34,6 @@ useParticleBackground(canvasRef);
 
 // ---------- 3D Tilt for each card ----------
 const heroTilt = useTilt();
-const appTilts = Array.from({ length: 6 }, () => useTilt());
 const quoteTilt = useTilt();
 const smallCardTilts = Array.from({ length: 4 }, () => useTilt());
 
@@ -113,11 +113,26 @@ const apps = [
     accent: 'pink',
     gradient: 'from-pink-400 to-rose-500',
     glow: 'rgba(244, 114, 182, 0.45)',
-    gridClass: 'md:col-span-5 md:row-span-2',
+    gridClass: 'md:col-span-6 md:row-span-2',
     component: 'MusicApp',
     route: '/music',
   },
+  {
+    id: 'landing',
+    title: 'AI 落地页生成器',
+    desc: '输入描述 · 一键生成',
+    icon: Rocket,
+    tag: 'NEW',
+    accent: 'orange',
+    gradient: 'from-orange-400 to-rose-500',
+    glow: 'rgba(251, 146, 60, 0.45)',
+    gridClass: 'md:col-span-6 md:row-span-2',
+    route: '/landing',
+  },
 ];
+
+// 3D Tilt instances for each app card (must be initialized after apps definition)
+const appTilts = Array.from({ length: apps.length }, () => useTilt());
 
 const smallCards = [
   {
@@ -129,7 +144,7 @@ const smallCards = [
     accent: 'emerald',
     gradient: 'from-emerald-400 to-teal-500',
     glow: 'rgba(52, 211, 153, 0.45)',
-    gridClass: 'md:col-span-3 md:row-span-2',
+    gridClass: 'md:col-span-4 md:row-span-2',
     component: 'SystemMonitorApp',
     route: '/monitor',
   },
@@ -167,7 +182,7 @@ const smallCards = [
     accent: 'violet',
     gradient: 'from-violet-400 to-fuchsia-500',
     glow: 'rgba(167, 139, 250, 0.3)',
-    gridClass: 'md:col-span-4 md:row-span-1',
+    gridClass: 'md:col-span-12 md:row-span-1',
   },
 ];
 
@@ -284,10 +299,10 @@ const heroGlowStyle = computed(() => ({
               Y
             </div>
             <div>
-              <div class="font-serif italic font-black text-lg leading-none tracking-wide">
+              <div class="font-serif italic font-black text-lg leading-none tracking-wide text-white">
                 YUNYOU
               </div>
-              <div class="text-[10px] text-slate-500 tracking-[0.3em] uppercase mt-1">
+              <div class="text-[10px] text-slate-400 tracking-[0.3em] uppercase mt-1">
                 Cloud Space
               </div>
             </div>
@@ -316,8 +331,8 @@ const heroGlowStyle = computed(() => ({
         </header>
 
         <!-- ===== Magazine Grid ===== -->
-        <div
-          class="grid grid-cols-2 md:grid-cols-12 gap-4 md:gap-5 auto-rows-auto md:auto-rows-[86px]"
+          <div
+          class="grid grid-cols-2 md:grid-cols-12 gap-4 md:gap-5 auto-rows-auto md:auto-rows-[86px] md:grid-flow-dense"
         >
           <!-- ========== HERO COVER CARD ========== -->
           <div

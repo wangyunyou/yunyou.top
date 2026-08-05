@@ -104,6 +104,18 @@ const routes = [
       },
     ],
   },
+  {
+    path: '/landing',
+    component: AppLayout,
+    children: [
+      {
+        path: '',
+        name: 'Landing',
+        component: () => import('../components/apps/LandingGeneratorApp.vue'),
+        meta: { title: 'AI 落地页生成器', accent: 'orange' },
+      },
+    ],
+  },
 ];
 
 const router = createRouter({

@@ -47,7 +47,7 @@ const goHome = () => {
       </div>
 
       <div class="w-20 flex justify-end">
-        <span class="text-[10px] text-slate-600 tracking-[0.2em] uppercase font-medium hidden md:inline">
+        <span class="text-[10px] text-slate-400 tracking-[0.2em] uppercase font-medium hidden md:inline">
           YUNYOU
         </span>
       </div>
