@@ -118,6 +118,30 @@ const routes = [
     ],
   },
   {
+    path: '/visitors',
+    component: AppLayout,
+    children: [
+      {
+        path: '',
+        name: 'Visitors',
+        component: () => import('../components/apps/VisitorMapApp.vue'),
+        meta: { title: '世界时钟', accent: 'cyan' },
+      },
+    ],
+  },
+  {
+    path: '/couplet',
+    component: AppLayout,
+    children: [
+      {
+        path: '',
+        name: 'Couplet',
+        component: () => import('../components/apps/CoupletApp.vue'),
+        meta: { title: 'AI 对联生成器', accent: 'amber' },
+      },
+    ],
+  },
+  {
     path: '/:pathMatch(.*)*',
     name: 'NotFound',
     component: NotFound,

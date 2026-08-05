@@ -21,6 +21,7 @@ const accentColors = {
   blue: 'bg-blue-400 shadow-[0_0_10px_rgba(96,165,250,0.6)]',
   sky: 'bg-sky-400 shadow-[0_0_10px_rgba(56,189,248,0.6)]',
   orange: 'bg-orange-400 shadow-[0_0_10px_rgba(251,146,60,0.6)]',
+  amber: 'bg-amber-400 shadow-[0_0_10px_rgba(251,191,36,0.6)]',
 };
 
 const dotClass = computed(() => accentColors[accent.value] || accentColors.sky);

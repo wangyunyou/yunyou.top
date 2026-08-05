@@ -20,7 +20,8 @@ import {
   ArrowDown,
   Quote,
   Zap,
-  Rocket,
+  Globe,
+  PenLine,
 } from 'lucide-vue-next';
 
 const router = useRouter();
@@ -113,21 +114,35 @@ const apps = [
     accent: 'pink',
     gradient: 'from-pink-400 to-rose-500',
     glow: 'rgba(244, 114, 182, 0.45)',
-    gridClass: 'md:col-span-6 md:row-span-2',
+    gridClass: 'md:col-span-4 md:row-span-2',
     component: 'MusicApp',
     route: '/music',
   },
   {
-    id: 'landing',
-    title: 'AI 落地页生成器',
-    desc: '输入描述 · 一键生成',
-    icon: Rocket,
-    tag: 'NEW',
-    accent: 'orange',
-    gradient: 'from-orange-400 to-rose-500',
-    glow: 'rgba(251, 146, 60, 0.45)',
-    gridClass: 'md:col-span-6 md:row-span-2',
-    route: '/landing',
+    id: 'visitors',
+    title: '世界时钟',
+    desc: 'IP定位 · 全球实时时钟',
+    icon: Globe,
+    tag: 'MAP',
+    accent: 'cyan',
+    gradient: 'from-cyan-400 to-blue-500',
+    glow: 'rgba(34, 211, 238, 0.45)',
+    gridClass: 'md:col-span-4 md:row-span-2',
+    component: 'VisitorMapApp',
+    route: '/visitors',
+  },
+  {
+    id: 'couplet',
+    title: 'AI 对联',
+    desc: '输入主题 · 智能作对',
+    icon: PenLine,
+    tag: 'COUPLET',
+    accent: 'amber',
+    gradient: 'from-amber-400 to-red-500',
+    glow: 'rgba(251, 191, 36, 0.45)',
+    gridClass: 'md:col-span-4 md:row-span-2',
+    component: 'CoupletApp',
+    route: '/couplet',
   },
 ];
 
@@ -218,6 +233,7 @@ const setReveal = (el) => {
 };
 
 let io = null;
+let forceRevealTimer = null;
 onMounted(() => {
   presenceStore.initPresence();
   timer = setInterval(() => {
@@ -238,10 +254,16 @@ onMounted(() => {
     );
     revealEls.forEach((el) => io.observe(el));
   });
+
+  // Safety net: force reveal all elements if observer somehow misses them
+  forceRevealTimer = setTimeout(() => {
+    revealEls.forEach((el) => el?.classList.add('revealed'));
+  }, 1500);
 });
 
 onUnmounted(() => {
   if (timer) clearInterval(timer);
+  if (forceRevealTimer) clearTimeout(forceRevealTimer);
   if (io) io.disconnect();
 });
 
@@ -613,8 +635,8 @@ const heroGlowStyle = computed(() => ({
 <style scoped>
 /* ===== Scroll Reveal ===== */
 .reveal {
-  opacity: 0;
-  transform: translateY(30px) scale(0.97);
+  opacity: 0.92;
+  transform: translateY(8px) scale(0.99);
   transition: opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1),
     transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
 }
