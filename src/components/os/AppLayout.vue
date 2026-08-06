@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, onUnmounted } from 'vue';
+import { computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { ArrowLeft } from 'lucide-vue-next';
 
@@ -26,31 +26,25 @@ const accentColors = {
 const dotClass = computed(() => accentColors[accent.value] || accentColors.sky);
 
 const goHome = () => {
-  // vue-router 每次 push 时会把上一个页面完整 URL 写入 history.state.back
-  // hash 路由下应用内页面都带 '#/'，外部页面（微信/搜索直达等）不带 → 只在应用内才 back()
-  const back = window.history.state?.back || '';
-  if (back.includes('#/')) {
+  if (route.path === '/') return;
+  // vue-router hash 模式下 history.state.back 存的是【路由路径】(如 "/"、"/ai"),
+  // 不含 "#/"。应用内导航 back 以 "/" 开头;外部直达(微信/搜索打开)back 为 null。
+  const back = window.history.state?.back;
+  if (typeof back === 'string' && back.startsWith('/')) {
     router.back();
   } else {
-    router.push('/');
+    // 兜底用 replace 而非 push：避免产生新历史导致系统返回键退不出去
+    router.replace('/');
   }
 };
-
-// Android 系统返回键兜底：外部直达应用页时，按返回键先拉回主页而不是直接退出应用
-const handlePopState = () => {
-  const back = window.history.state?.back || '';
-  if (back && !back.includes('#/')) {
-    router.push('/');
-  }
-};
-onMounted(() => window.addEventListener('popstate', handlePopState));
-onUnmounted(() => window.removeEventListener('popstate', handlePopState));
 </script>
 
 <template>
   <div class="h-screen supports-[height:100dvh]:h-dvh w-full flex flex-col bg-[#030305] text-slate-100 overflow-hidden">
     <!-- Top Bar -->
-    <header class="h-12 md:h-14 pt-[env(safe-area-inset-top)] flex items-center justify-between px-3 md:px-6 border-b border-white/[0.06] bg-white/[0.02] backdrop-blur-xl shrink-0 z-50">
+    <!-- 注意：必须用 min-h + pt-safe 而非固定 h-12 + pt-safe，否则在 iPhone 刘海屏上
+         safe-area-inset-top(≈47px) 会吃掉内容区高度，把返回按钮挤出 header 并被 main 内容遮住 -->
+    <header class="min-h-12 md:min-h-14 pt-[env(safe-area-inset-top)] pb-2 flex items-center justify-between px-3 md:px-6 border-b border-white/[0.06] bg-white/[0.02] backdrop-blur-xl shrink-0 z-50">
       <button
         @click="goHome"
         aria-label="返回上一页"
