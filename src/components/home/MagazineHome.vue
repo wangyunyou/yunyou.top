@@ -305,25 +305,25 @@ const heroGlowStyle = computed(() => ({
     ></canvas>
 
     <!-- ===== Ambient Background ===== -->
-    <div class="fixed inset-0 z-0 pointer-events-none">
+    <div class="fixed inset-0 z-0 pointer-events-none transform-gpu">
       <!-- Wallpaper layer -->
       <img
         v-if="configStore.wallpaper"
         :src="configStore.wallpaper"
         alt=""
-        class="absolute inset-0 w-full h-full object-cover opacity-40 saturate-100"
+        class="absolute inset-0 w-full h-full object-cover opacity-40 saturate-100 transform-gpu"
       />
       <div class="absolute inset-0 bg-[#030305]/55"></div>
 
-      <!-- Soft aurora orbs -->
+      <!-- Soft aurora orbs (Desktop only to prevent Safari GPU lag on mobile touch devices) -->
       <div
-        class="absolute -top-32 -left-32 w-[520px] h-[520px] rounded-full bg-indigo-500/20 blur-[150px] animate-aurora-1"
+        class="hidden md:block absolute -top-32 -left-32 w-[520px] h-[520px] rounded-full bg-indigo-500/20 blur-[150px] animate-aurora-1"
       ></div>
       <div
-        class="absolute top-1/3 -right-40 w-[600px] h-[600px] rounded-full bg-fuchsia-500/15 blur-[160px] animate-aurora-2"
+        class="hidden md:block absolute top-1/3 -right-40 w-[600px] h-[600px] rounded-full bg-fuchsia-500/15 blur-[160px] animate-aurora-2"
       ></div>
       <div
-        class="absolute -bottom-40 left-1/4 w-[480px] h-[480px] rounded-full bg-cyan-500/15 blur-[140px] animate-aurora-3"
+        class="hidden md:block absolute -bottom-40 left-1/4 w-[480px] h-[480px] rounded-full bg-cyan-500/15 blur-[140px] animate-aurora-3"
       ></div>
 
       <!-- Fine noise overlay -->
