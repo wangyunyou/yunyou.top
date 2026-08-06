@@ -42,18 +42,42 @@ const shortVideoTypes = [
   },
 ];
 
+// fallback 源必须是国内网络可访问的稳定测试视频。
+// 注意: 之前用 Google Storage(commondatastorage.googleapis.com)在国内返回 403,
+// 主 API 一旦失败 fallback 也必挂 → 表现为"经常加载不出来"。
 const fallbackVideos = [
-  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
-  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+  'https://media.w3.org/2010/05/sintel/trailer.mp4',
+  'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4',
+  'https://vjs.zencdn.net/v/oceans.mp4',
 ];
+
+// 主 API 失败时优先重试主 API(每次请求返回不同随机视频),再降级 fallback
+const getVideoCandidates = () => {
+  const api = currentType.value.api;
+  return [api, api, api, ...fallbackVideos];
+};
 
 const currentType = ref(shortVideoTypes[0]);
 const videoUrl = ref('');
 const isLoading = ref(true);
 const loadError = ref(false);
 let sourceAttempt = 0;
+let loadTimeout = null;
 
-const getVideoCandidates = () => [currentType.value.api, ...fallbackVideos];
+// 加载超时兜底:视频长时间缓冲(CDN 卡顿/302 慢/资源失效但不触发 error)时自动切换下一候选
+const MAX_LOAD_WAIT = 12000; // 12 秒未开始播放视为超时
+const scheduleLoadTimeout = () => {
+  clearTimeout(loadTimeout);
+  loadTimeout = setTimeout(() => {
+    const candidates = getVideoCandidates();
+    if (sourceAttempt < candidates.length - 1) {
+      refreshVideo(sourceAttempt + 1);
+    } else {
+      isLoading.value = false;
+      loadError.value = true;
+    }
+  }, MAX_LOAD_WAIT);
+};
 
 const refreshVideo = (attempt = 0) => {
   sourceAttempt = attempt;
@@ -71,6 +95,7 @@ const refreshVideo = (attempt = 0) => {
   const separator = api.includes('?') ? '&' : '?';
   videoUrl.value = `${api}${separator}_t=${timestamp}`;
   isPlaying.value = false;
+  scheduleLoadTimeout();
   if (videoRef.value) videoRef.value.load();
 };
 
@@ -90,12 +115,14 @@ const togglePlay = () => {
 };
 
 const onVideoPlay = () => {
+  clearTimeout(loadTimeout);
   isLoading.value = false;
   isPlaying.value = true;
   loadError.value = false;
 };
 
 const onVideoError = () => {
+  clearTimeout(loadTimeout);
   const candidates = getVideoCandidates();
   if (sourceAttempt < candidates.length - 1) {
     refreshVideo(sourceAttempt + 1);
@@ -120,6 +147,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   clearTimeout(controlsTimeout);
+  clearTimeout(loadTimeout);
 });
 </script>
 
@@ -206,10 +234,10 @@ onUnmounted(() => {
               当前资源节点响应缓慢
             </div>
             <div class="text-xs text-slate-500 mb-6">
-              第三方接口压力过大，建议切换分类或重试
+              已自动尝试多个视频源，请切换分类或稍后重试
             </div>
             <button
-              @click="refreshVideo"
+              @click="refreshVideo()"
               class="px-6 py-2 bg-rose-500 text-white rounded-xl text-xs font-bold hover:bg-rose-400 transition-colors"
             >
               重新加载
