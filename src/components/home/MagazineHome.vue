@@ -397,7 +397,7 @@ const heroGlowStyle = computed(() => ({
               <span
                 class="absolute -bottom-8 -right-4 font-serif italic font-black text-[10rem] md:text-[14rem] leading-none text-white/[0.025] group-hover:text-white/[0.04] transition-colors duration-700 select-none"
                 :style="heroParallaxStyle"
-                >YU</span
+                >😄😭</span
               >
 
               <!-- Top row -->
@@ -435,7 +435,7 @@ const heroGlowStyle = computed(() => ({
                 <h1
                   class="hero-title font-serif italic font-black text-6xl md:text-9xl leading-[0.92] tracking-tight"
                 >
-                  云优<br />网络
+                  为所<br />欲为
                 </h1>
                 <div class="flex items-center gap-3 mt-4">
                   <div
