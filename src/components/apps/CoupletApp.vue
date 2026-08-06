@@ -9,11 +9,12 @@ import {
   Lightbulb,
   Loader2,
 } from 'lucide-vue-next';
+import { useZhipuAI } from '../../composables/useZhipuAI';
 
 const keyword = ref('');
-const isGenerating = ref(false);
 const copied = ref(false);
 const isComposing = ref(false);
+const { isGenerating, chatCompletion } = useZhipuAI();
 
 const couplet = ref({
   upper: '',
@@ -22,9 +23,6 @@ const couplet = ref({
 });
 
 const history = ref([]);
-
-const ZHIPU_API = 'https://open.bigmodel.cn/api/paas/v4/chat/completions';
-const ZHIPU_KEY = 'Bearer e8e4aba3bdb74dca8a590c10c15a9466.DWWuFVA567LixY0E';
 
 // Quick keywords
 const quickKeywords = ['春天', '明月', '龙年', '福', '家', '江山', '梅花', '茶'];
@@ -38,22 +36,15 @@ const generateCouplet = async (kw = null) => {
   const topic = kw || keyword.value.trim();
   if (!topic || isGenerating.value) return;
 
-  isGenerating.value = true;
   couplet.value = { upper: '', lower: '', horizontal: '' };
 
   try {
-    const response = await fetch(ZHIPU_API, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: ZHIPU_KEY,
-      },
-      body: JSON.stringify({
-        model: 'glm-4-flash',
-        messages: [
-          {
-            role: 'system',
-            content: `你是一位精通中国传统对联的文学大师。请根据用户提供的主题创作一副对联。
+    const content = await chatCompletion({
+      temperature: 0.85,
+      messages: [
+        {
+          role: 'system',
+          content: `你是一位精通中国传统对联的文学大师。请根据用户提供的主题创作一副对联。
 
 严格要求：
 1. 上下联字数相等（通常 5-9 字），词性对应，平仄相对
@@ -62,28 +53,13 @@ const generateCouplet = async (kw = null) => {
 
 请严格按以下 JSON 格式返回，不要包含任何其他文字：
 {"upper": "上联内容", "lower": "下联内容", "horizontal": "横批内容"}`,
-          },
-          {
-            role: 'user',
-            content: `请为「${topic}」创作一副对联。`,
-          },
-        ],
-        stream: false,
-        temperature: 0.85,
-      }),
+        },
+        {
+          role: 'user',
+          content: `请为「${topic}」创作一副对联。`,
+        },
+      ],
     });
-
-    if (!response.ok) {
-      let errorMsg = '请求失败';
-      try {
-        const data = await response.json();
-        errorMsg = data.error?.message || `请求失败 (${response.status})`;
-      } catch {}
-      throw new Error(errorMsg);
-    }
-
-    const data = await response.json();
-    const content = data.choices?.[0]?.message?.content || '';
 
     // Try to parse JSON response
     let parsed;

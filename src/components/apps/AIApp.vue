@@ -10,8 +10,10 @@ import {
   Info,
 } from 'lucide-vue-next';
 import { useVisualViewport } from '../../composables/useVisualViewport';
+import { useZhipuAI } from '../../composables/useZhipuAI';
 
 const { containerStyle } = useVisualViewport();
+const { streamChatCompletion } = useZhipuAI();
 
 let savedMessages = null;
 try {
@@ -105,74 +107,17 @@ const sendMessage = async () => {
   scrollToBottom();
 
   try {
-    const response = await fetch(
-      'https://open.bigmodel.cn/api/paas/v4/chat/completions',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization:
-            'Bearer e8e4aba3bdb74dca8a590c10c15a9466.DWWuFVA567LixY0E',
-        },
-        body: JSON.stringify({
-          model: 'glm-4-flash',
-          messages: messages.value
-            .slice(0, -1)
-            .map((m) => ({ role: m.role, content: m.content })),
-          stream: true,
-        }),
-      }
-    );
+    const chatPayload = messages.value
+      .slice(0, -1)
+      .map((m) => ({ role: m.role, content: m.content }));
 
-    if (!response.ok) {
-      let message = '网络连接异常';
-      try {
-        const text = await response.text();
-        if (text) {
-          const parsed = JSON.parse(text);
-          message = parsed.error?.message || parsed.message || text;
-        } else {
-          message = `请求失败 (${response.status})`;
-        }
-      } catch {
-        message = `请求失败 (${response.status})`;
-      }
-      throw new Error(message);
-    }
-
-    if (!response.body) {
-      throw new Error('流式响应不可用，请检查网络环境');
-    }
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
-    let partialData = '';
-
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-
-      const chunk = decoder.decode(value, { stream: true });
-      const lines = (partialData + chunk).split('\n');
-      partialData = lines.pop(); // Keep incomplete line
-
-      for (const line of lines) {
-        const trimmed = line.trim();
-        if (!trimmed || trimmed === 'data: [DONE]') continue;
-
-        if (trimmed.startsWith('data: ')) {
-          try {
-            const data = JSON.parse(trimmed.slice(6));
-            const delta = data.choices?.[0]?.delta?.content || '';
-            if (delta) {
-              messages.value[assistantMessageIndex].content += delta;
-              scrollToBottom();
-            }
-          } catch (e) {
-            console.error('SSE Error:', e);
-          }
-        }
-      }
-    }
+    await streamChatCompletion({
+      messages: chatPayload,
+      onChunk: (delta) => {
+        messages.value[assistantMessageIndex].content += delta;
+        scrollToBottom();
+      },
+    });
   } catch (error) {
     messages.value[assistantMessageIndex].content = `抱歉，通讯中断：${error.message}。请稍后重试。`;
   } finally {

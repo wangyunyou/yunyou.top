@@ -16,16 +16,18 @@ import {
   RefreshCw,
   FileCode2,
 } from 'lucide-vue-next';
+import { useZhipuAI } from '../../composables/useZhipuAI';
 
 // ---------- State ----------
 const description = ref('');
-const isGenerating = ref(false);
 const currentTemplate = ref('minimal');
 const generatedData = ref(null);
 const error = ref('');
-const previewMode = ref('preview');
-const copied = ref(false);
-const showExamples = ref(false);
+const activeTab = ref('preview'); // 'preview' | 'code'
+const codeCopied = ref(false);
+const showTemplateMenu = ref(false);
+
+const { isGenerating, chatCompletion } = useZhipuAI();
 
 // ---------- Templates ----------
 const templates = [
@@ -107,32 +109,10 @@ const generate = async () => {
 - avatar 用单个中文字
 - 直接返回纯 JSON`;
 
-    const response = await fetch(
-      'https://open.bigmodel.cn/api/paas/v4/chat/completions',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization:
-            'Bearer e8e4aba3bdb74dca8a590c10c15a9466.DWWuFVA567LixY0E',
-        },
-        body: JSON.stringify({
-          model: 'glm-4-flash',
-          messages: [{ role: 'user', content: prompt }],
-          temperature: 0.7,
-        }),
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error(`API 请求失败 (${response.status})`);
-    }
-
-    const data = await response.json();
-    const content = data?.choices?.[0]?.message?.content;
-    if (!content) {
-      throw new Error('AI 返回内容为空，请重试');
-    }
+    const content = await chatCompletion({
+      temperature: 0.7,
+      messages: [{ role: 'user', content: prompt }],
+    });
 
     // Clean up markdown code blocks if present
     let cleaned = content
