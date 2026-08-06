@@ -208,11 +208,14 @@ const openApp = (app) => {
   if (isNavigating) return;
   if (app.route) {
     isNavigating = true;
-    router.push(app.route).then(() => {
-      isNavigating = false;
-    }).catch(() => {
-      isNavigating = false;
-    });
+    router
+      .push(app.route)
+      .then(() => {
+        isNavigating = false;
+      })
+      .catch(() => {
+        isNavigating = false;
+      });
     return;
   }
   if (app.href) {
@@ -255,7 +258,9 @@ const heroGlowStyle = computed(() => ({
 </script>
 
 <template>
-  <div class="magazine relative h-screen w-screen overflow-hidden bg-[#030305] text-slate-100 select-none">
+  <div
+    class="magazine relative h-screen w-screen overflow-hidden bg-[#030305] text-slate-100 select-none"
+  >
     <!-- ===== Particle Canvas (above background) ===== -->
     <canvas
       v-if="configStore.settings.particles"
@@ -290,12 +295,12 @@ const heroGlowStyle = computed(() => ({
     </div>
 
     <!-- ===== Scroll Container ===== -->
-    <div class="relative z-10 h-full w-full overflow-y-auto overflow-x-hidden scroll-smooth">
+    <div
+      class="relative z-10 h-full w-full overflow-y-auto overflow-x-hidden scroll-smooth"
+    >
       <main class="max-w-[1320px] mx-auto px-5 md:px-10 pt-6 md:pt-10 pb-24">
         <!-- ===== Top Bar ===== -->
-        <header
-          class="flex items-center justify-between mb-10 md:mb-14"
-        >
+        <header class="flex items-center justify-between mb-10 md:mb-14">
           <div class="flex items-center gap-3">
             <div
               class="logo-mark w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-400 via-violet-500 to-fuchsia-500 flex items-center justify-center font-serif italic font-black text-white text-lg shadow-[0_0_30px_rgba(139,92,246,0.45)]"
@@ -303,10 +308,14 @@ const heroGlowStyle = computed(() => ({
               Y
             </div>
             <div>
-              <div class="font-serif italic font-black text-lg leading-none tracking-wide text-white">
+              <div
+                class="font-serif italic font-black text-lg leading-none tracking-wide text-white"
+              >
                 YUNYOU
               </div>
-              <div class="text-[10px] text-slate-400 tracking-[0.3em] uppercase mt-1">
+              <div
+                class="text-[10px] text-slate-400 tracking-[0.3em] uppercase mt-1"
+              >
                 Cloud Space
               </div>
             </div>
@@ -317,8 +326,12 @@ const heroGlowStyle = computed(() => ({
               class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/8 border border-emerald-500/20 text-emerald-300 text-xs font-medium hover:bg-emerald-500/12 transition-all"
             >
               <span class="relative flex h-2 w-2">
-                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-50"></span>
-                <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
+                <span
+                  class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-50"
+                ></span>
+                <span
+                  class="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"
+                ></span>
               </span>
               {{ presenceStore.onlineCount }} 人在线
             </div>
@@ -335,13 +348,11 @@ const heroGlowStyle = computed(() => ({
         </header>
 
         <!-- ===== Magazine Grid ===== -->
-          <div
+        <div
           class="grid grid-cols-2 md:grid-cols-12 gap-4 md:gap-5 auto-rows-auto md:auto-rows-[86px] md:grid-flow-dense"
         >
           <!-- ========== HERO COVER CARD ========== -->
-          <div
-            class="col-span-2 md:col-span-7 md:row-span-4"
-          >
+          <div class="col-span-2 md:col-span-7 md:row-span-4">
             <article
               ref="heroTilt.tiltEl"
               class="hero-card group relative h-full overflow-hidden rounded-[28px] p-7 md:p-10 flex flex-col justify-between min-h-[420px] md:min-h-0 cursor-default"
@@ -354,7 +365,9 @@ const heroGlowStyle = computed(() => ({
               <div class="absolute inset-0 rounded-[28px] hero-surface"></div>
 
               <!-- Top accent line -->
-              <div class="absolute top-0 left-8 right-8 h-px bg-gradient-to-r from-transparent via-sky-400/60 to-transparent opacity-60"></div>
+              <div
+                class="absolute top-0 left-8 right-8 h-px bg-gradient-to-r from-transparent via-sky-400/60 to-transparent opacity-60"
+              ></div>
 
               <!-- Mouse glow orb -->
               <div
@@ -374,7 +387,8 @@ const heroGlowStyle = computed(() => ({
               <div
                 class="absolute -right-16 -top-16 w-72 h-72 md:w-96 md:h-96 rounded-full opacity-40 blur-3xl pointer-events-none"
                 :style="{
-                  background: 'radial-gradient(circle, rgba(139,92,246,0.35) 0%, rgba(56,189,248,0.15) 40%, transparent 70%)',
+                  background:
+                    'radial-gradient(circle, rgba(139,92,246,0.35) 0%, rgba(56,189,248,0.15) 40%, transparent 70%)',
                   ...heroGlowStyle,
                 }"
               ></div>
@@ -383,11 +397,14 @@ const heroGlowStyle = computed(() => ({
               <span
                 class="absolute -bottom-8 -right-4 font-serif italic font-black text-[10rem] md:text-[14rem] leading-none text-white/[0.025] group-hover:text-white/[0.04] transition-colors duration-700 select-none"
                 :style="heroParallaxStyle"
-              >YU</span>
+                >YU</span
+              >
 
               <!-- Top row -->
               <div class="relative z-10 flex items-center justify-between">
-                <span class="text-[10px] font-semibold tracking-[0.3em] text-sky-300/80 uppercase flex items-center gap-2">
+                <span
+                  class="text-[10px] font-semibold tracking-[0.3em] text-sky-300/80 uppercase flex items-center gap-2"
+                >
                   <Zap class="w-3 h-3 text-amber-400" />
                   Cloud Magazine · 2026
                 </span>
@@ -395,29 +412,50 @@ const heroGlowStyle = computed(() => ({
                   class="flex items-center gap-1.5 text-[10px] font-medium text-slate-400 bg-white/[0.04] border border-white/[0.08] rounded-full px-3 py-1"
                 >
                   <Activity class="w-3 h-3 text-sky-400" />
-                  {{ now.toLocaleDateString([], { month: 'long', day: 'numeric', weekday: 'long' }) }}
+                  {{
+                    now.toLocaleDateString([], {
+                      month: 'long',
+                      day: 'numeric',
+                      weekday: 'long',
+                    })
+                  }}
                 </span>
               </div>
 
               <!-- Title block -->
-              <div class="relative z-10 my-4 md:my-6" :style="heroParallaxStyle">
-                <div class="text-[10px] md:text-[11px] font-semibold text-fuchsia-300/80 tracking-[0.25em] uppercase mb-3">
+              <div
+                class="relative z-10 my-4 md:my-6"
+                :style="heroParallaxStyle"
+              >
+                <div
+                  class="text-[10px] md:text-[11px] font-semibold text-fuchsia-300/80 tracking-[0.25em] uppercase mb-3"
+                >
                   The Cloud Magazine
                 </div>
-                <h1 class="hero-title font-serif italic font-black text-6xl md:text-9xl leading-[0.92] tracking-tight">
+                <h1
+                  class="hero-title font-serif italic font-black text-6xl md:text-9xl leading-[0.92] tracking-tight"
+                >
                   云优<br />网络
                 </h1>
                 <div class="flex items-center gap-3 mt-4">
-                  <div class="h-px w-12 bg-gradient-to-r from-sky-400/70 to-transparent"></div>
-                  <div class="w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse"></div>
-                  <div class="h-px w-12 bg-gradient-to-l from-fuchsia-400/70 to-transparent"></div>
+                  <div
+                    class="h-px w-12 bg-gradient-to-r from-sky-400/70 to-transparent"
+                  ></div>
+                  <div
+                    class="w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse"
+                  ></div>
+                  <div
+                    class="h-px w-12 bg-gradient-to-l from-fuchsia-400/70 to-transparent"
+                  ></div>
                 </div>
               </div>
 
               <!-- Bottom row -->
               <div class="relative z-10 flex items-end justify-between gap-4">
                 <div>
-                  <p class="text-sm md:text-[15px] text-slate-400 leading-relaxed max-w-md">
+                  <p
+                    class="text-sm md:text-[15px] text-slate-400 leading-relaxed max-w-md"
+                  >
                     一个集聊天、AI、影音、游戏于一体的云端创作空间。翻开这页数字杂志，发现更多可能。
                   </p>
                   <div class="flex flex-wrap gap-2 mt-4">
@@ -425,7 +463,8 @@ const heroGlowStyle = computed(() => ({
                       v-for="t in heroTags"
                       :key="t"
                       class="text-[10px] px-3 py-1 rounded-full bg-white/[0.04] border border-white/[0.10] text-slate-300 font-medium tracking-wider hover:bg-white/[0.08] hover:border-white/20 transition-all cursor-default"
-                    >{{ t }}</span>
+                      >{{ t }}</span
+                    >
                   </div>
                 </div>
                 <div
@@ -446,7 +485,11 @@ const heroGlowStyle = computed(() => ({
             :class="app.gridClass"
           >
             <article
-              :ref="(el) => { appTilts[i].tiltEl.value = el }"
+              :ref="
+                (el) => {
+                  appTilts[i].tiltEl.value = el;
+                }
+              "
               class="tilt-card app-card group cursor-pointer relative h-full overflow-hidden rounded-2xl flex flex-col justify-between p-5 min-h-[150px] md:min-h-0"
               :style="appTilts[i].transform"
               @click="openApp(app)"
@@ -467,20 +510,28 @@ const heroGlowStyle = computed(() => ({
               <!-- Subtle gradient wash -->
               <div
                 class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"
-                :style="{ background: `radial-gradient(circle at 50% 0%, ${app.glow} 0%, transparent 60%)` }"
+                :style="{
+                  background: `radial-gradient(circle at 50% 0%, ${app.glow} 0%, transparent 60%)`,
+                }"
               ></div>
 
               <!-- Mouse glow -->
               <div
                 class="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-                :style="{ background: `radial-gradient(circle at ${appTilts[i].glowX}% ${appTilts[i].glowY}%, ${app.glow} 0%, transparent 60%)` }"
+                :style="{
+                  background: `radial-gradient(circle at ${appTilts[i].glowX}% ${appTilts[i].glowY}%, ${app.glow} 0%, transparent 60%)`,
+                }"
               ></div>
 
               <!-- Bottom readability fade -->
-              <div class="absolute inset-0 rounded-2xl bg-gradient-to-t from-black/50 via-black/10 to-transparent pointer-events-none"></div>
+              <div
+                class="absolute inset-0 rounded-2xl bg-gradient-to-t from-black/50 via-black/10 to-transparent pointer-events-none"
+              ></div>
 
               <!-- Number -->
-              <span class="absolute top-4 right-4 font-serif italic font-black text-2xl md:text-3xl text-white/10 group-hover:text-white/25 transition-all duration-500 group-hover:scale-110">
+              <span
+                class="absolute top-4 right-4 font-serif italic font-black text-2xl md:text-3xl text-white/10 group-hover:text-white/25 transition-all duration-500 group-hover:scale-110"
+              >
                 {{ String(i + 1).padStart(2, '0') }}
               </span>
 
@@ -490,18 +541,27 @@ const heroGlowStyle = computed(() => ({
                   class="app-icon-wrap w-11 h-11 rounded-xl bg-white/[0.08] backdrop-blur-sm border border-white/[0.12] flex items-center justify-center shadow-lg transition-all duration-500 group-hover:shadow-[0_0_24px_var(--glow-color)]"
                   :style="{ '--glow-color': app.glow }"
                 >
-                  <component :is="app.icon" class="w-6 h-6 text-white drop-shadow transition-transform duration-500 group-hover:scale-110" />
+                  <component
+                    :is="app.icon"
+                    class="w-6 h-6 text-white drop-shadow transition-transform duration-500 group-hover:scale-110"
+                  />
                 </div>
               </div>
 
               <div class="relative z-10 mt-3">
-                <div class="text-[9px] font-semibold tracking-[0.3em] text-white/40 uppercase mb-1.5">
+                <div
+                  class="text-[9px] font-semibold tracking-[0.3em] text-white/40 uppercase mb-1.5"
+                >
                   {{ app.tag }}
                 </div>
-                <h3 class="font-bold text-lg md:text-xl text-white leading-tight">
+                <h3
+                  class="font-bold text-lg md:text-xl text-white leading-tight"
+                >
                   {{ app.title }}
                 </h3>
-                <p class="text-[11px] md:text-xs text-white/55 mt-1.5 leading-relaxed">
+                <p
+                  class="text-[11px] md:text-xs text-white/55 mt-1.5 leading-relaxed"
+                >
                   {{ app.desc }}
                 </p>
               </div>
@@ -513,9 +573,7 @@ const heroGlowStyle = computed(() => ({
           </div>
 
           <!-- ========== QUOTE CARD ========== -->
-          <div
-            class="col-span-2 md:col-span-4 md:row-span-2"
-          >
+          <div class="col-span-2 md:col-span-4 md:row-span-2">
             <article
               ref="quoteTilt.tiltEl"
               class="tilt-card quote-card group relative h-full overflow-hidden rounded-2xl p-6 flex flex-col justify-between min-h-[170px] md:min-h-0"
@@ -525,22 +583,32 @@ const heroGlowStyle = computed(() => ({
               @mouseleave="quoteTilt.onMouseLeave"
             >
               <!-- Top amber accent -->
-              <div class="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-amber-400/80 to-transparent"></div>
+              <div
+                class="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-amber-400/80 to-transparent"
+              ></div>
 
               <!-- Mouse glow -->
               <div
                 class="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-                :style="{ background: `radial-gradient(circle at ${quoteTilt.glowX}% ${quoteTilt.glowY}%, rgba(251,191,36,0.12) 0%, transparent 60%)` }"
+                :style="{
+                  background: `radial-gradient(circle at ${quoteTilt.glowX}% ${quoteTilt.glowY}%, rgba(251,191,36,0.12) 0%, transparent 60%)`,
+                }"
               ></div>
 
               <div class="relative z-10">
-                <Quote class="w-7 h-7 text-amber-400/70 group-hover:text-amber-400 transition-colors duration-500" />
+                <Quote
+                  class="w-7 h-7 text-amber-400/70 group-hover:text-amber-400 transition-colors duration-500"
+                />
               </div>
               <div class="relative z-10 mt-4">
-                <p class="font-serif italic text-base md:text-lg text-slate-200 leading-relaxed">
+                <p
+                  class="font-serif italic text-base md:text-lg text-slate-200 leading-relaxed"
+                >
                   "{{ dailyQuote.text }}"
                 </p>
-                <p class="text-[10px] text-amber-300/70 font-semibold mt-4 tracking-[0.2em] uppercase">
+                <p
+                  class="text-[10px] text-amber-300/70 font-semibold mt-4 tracking-[0.2em] uppercase"
+                >
                   — {{ dailyQuote.author }}
                 </p>
               </div>
@@ -555,7 +623,11 @@ const heroGlowStyle = computed(() => ({
             :class="card.gridClass"
           >
             <article
-              :ref="(el) => { smallCardTilts[i].tiltEl.value = el }"
+              :ref="
+                (el) => {
+                  smallCardTilts[i].tiltEl.value = el;
+                }
+              "
               class="tilt-card app-card group cursor-pointer relative h-full overflow-hidden rounded-2xl flex items-center gap-4 p-5 min-h-[110px] md:min-h-0"
               :style="smallCardTilts[i].transform"
               @click="openApp(card)"
@@ -572,22 +644,35 @@ const heroGlowStyle = computed(() => ({
               <!-- Mouse glow -->
               <div
                 class="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-                :style="{ background: `radial-gradient(circle at ${smallCardTilts[i].glowX}% ${smallCardTilts[i].glowY}%, ${card.glow} 0%, transparent 60%)` }"
+                :style="{
+                  background: `radial-gradient(circle at ${smallCardTilts[i].glowX}% ${smallCardTilts[i].glowY}%, ${card.glow} 0%, transparent 60%)`,
+                }"
               ></div>
 
               <!-- Bottom readability fade -->
-              <div class="absolute inset-0 rounded-2xl bg-gradient-to-t from-black/40 via-black/5 to-transparent pointer-events-none"></div>
+              <div
+                class="absolute inset-0 rounded-2xl bg-gradient-to-t from-black/40 via-black/5 to-transparent pointer-events-none"
+              ></div>
 
               <div class="relative z-10 shrink-0">
-                <div class="app-icon-wrap w-10 h-10 rounded-xl bg-white/[0.08] backdrop-blur-sm border border-white/[0.12] flex items-center justify-center shadow transition-all duration-500">
-                  <component :is="card.icon" class="w-5 h-5 text-white drop-shadow transition-transform duration-500 group-hover:scale-110" />
+                <div
+                  class="app-icon-wrap w-10 h-10 rounded-xl bg-white/[0.08] backdrop-blur-sm border border-white/[0.12] flex items-center justify-center shadow transition-all duration-500"
+                >
+                  <component
+                    :is="card.icon"
+                    class="w-5 h-5 text-white drop-shadow transition-transform duration-500 group-hover:scale-110"
+                  />
                 </div>
               </div>
               <div class="relative z-10 min-w-0">
-                <div class="text-[9px] font-semibold tracking-[0.25em] text-white/40 uppercase mb-0.5">
+                <div
+                  class="text-[9px] font-semibold tracking-[0.25em] text-white/40 uppercase mb-0.5"
+                >
                   {{ card.tag }}
                 </div>
-                <h3 class="font-bold text-sm md:text-base text-white leading-tight truncate">
+                <h3
+                  class="font-bold text-sm md:text-base text-white leading-tight truncate"
+                >
                   {{ card.title }}
                 </h3>
                 <p class="text-[10px] md:text-[11px] text-white/55 truncate">
@@ -595,6 +680,7 @@ const heroGlowStyle = computed(() => ({
                 </p>
               </div>
               <ArrowUpRight
+                v-if="card.route || card.href"
                 class="relative z-10 ml-auto w-4 h-4 text-white/30 shrink-0 group-hover:text-white group-hover:translate-x-1 group-hover:-translate-y-1 transition-all duration-500"
               />
             </article>
@@ -619,13 +705,15 @@ const heroGlowStyle = computed(() => ({
   background: rgba(255, 255, 255, 0.025);
   border: 1px solid rgba(255, 255, 255, 0.07);
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.25);
-  transition: transform 0.15s ease-out, box-shadow 0.5s ease, border-color 0.5s ease, background 0.5s ease;
+  transition: transform 0.15s ease-out, box-shadow 0.5s ease,
+    border-color 0.5s ease, background 0.5s ease;
 }
 .app-card:hover,
 .quote-card:hover {
   background: rgba(255, 255, 255, 0.04);
   border-color: rgba(255, 255, 255, 0.14);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.06);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35),
+    0 0 0 1px rgba(255, 255, 255, 0.06);
   transform: translateY(-4px);
 }
 
@@ -643,7 +731,12 @@ const heroGlowStyle = computed(() => ({
 }
 
 .quote-card {
-  background: linear-gradient(160deg, rgba(251, 191, 36, 0.06) 0%, rgba(255, 255, 255, 0.02) 40%, rgba(255, 255, 255, 0.02) 100%);
+  background: linear-gradient(
+    160deg,
+    rgba(251, 191, 36, 0.06) 0%,
+    rgba(255, 255, 255, 0.02) 40%,
+    rgba(255, 255, 255, 0.02) 100%
+  );
 }
 
 /* ===== Hero Card ===== */
@@ -651,16 +744,25 @@ const heroGlowStyle = computed(() => ({
   background: rgba(255, 255, 255, 0.025);
   border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 0 8px 40px rgba(0, 0, 0, 0.35);
-  transition: transform 0.15s ease-out, box-shadow 0.5s ease, border-color 0.5s ease;
+  transition: transform 0.15s ease-out, box-shadow 0.5s ease,
+    border-color 0.5s ease;
 }
 .hero-card:hover {
   border-color: rgba(255, 255, 255, 0.14);
-  box-shadow: 0 16px 60px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.06);
+  box-shadow: 0 16px 60px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(255, 255, 255, 0.06);
 }
 .hero-surface {
-  background:
-    radial-gradient(ellipse at 30% 10%, rgba(56, 189, 248, 0.06) 0%, transparent 45%),
-    radial-gradient(ellipse at 80% 80%, rgba(139, 92, 246, 0.05) 0%, transparent 45%),
+  background: radial-gradient(
+      ellipse at 30% 10%,
+      rgba(56, 189, 248, 0.06) 0%,
+      transparent 45%
+    ),
+    radial-gradient(
+      ellipse at 80% 80%,
+      rgba(139, 92, 246, 0.05) 0%,
+      transparent 45%
+    ),
     rgba(12, 14, 24, 0.6);
   border: 1px solid rgba(255, 255, 255, 0.07);
 }
@@ -683,18 +785,29 @@ const heroGlowStyle = computed(() => ({
   animation: shimmer 6s ease-in-out infinite;
 }
 @keyframes shimmer {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
 }
 
 /* ===== Grid Pattern ===== */
 .grid-pattern {
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+  background-image: linear-gradient(
+      rgba(255, 255, 255, 0.03) 1px,
+      transparent 1px
+    ),
     linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
   background-size: 40px 40px;
   mask-image: radial-gradient(ellipse at center, black 0%, transparent 75%);
-  -webkit-mask-image: radial-gradient(ellipse at center, black 0%, transparent 75%);
+  -webkit-mask-image: radial-gradient(
+    ellipse at center,
+    black 0%,
+    transparent 75%
+  );
 }
 
 /* ===== Noise Overlay ===== */
@@ -710,8 +823,14 @@ const heroGlowStyle = computed(() => ({
   animation: logo-glow 4s ease-in-out infinite;
 }
 @keyframes logo-glow {
-  0%, 100% { box-shadow: 0 0 24px rgba(139, 92, 246, 0.4); }
-  50% { box-shadow: 0 0 36px rgba(139, 92, 246, 0.65), 0 0 60px rgba(56, 189, 248, 0.25); }
+  0%,
+  100% {
+    box-shadow: 0 0 24px rgba(139, 92, 246, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 36px rgba(139, 92, 246, 0.65),
+      0 0 60px rgba(56, 189, 248, 0.25);
+  }
 }
 
 /* ===== App Icon Hover ===== */
@@ -726,30 +845,63 @@ const heroGlowStyle = computed(() => ({
 
 /* ===== Aurora Orbs ===== */
 @keyframes aurora-1 {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  33% { transform: translate(30px, -20px) scale(1.08); }
-  66% { transform: translate(-20px, 15px) scale(0.95); }
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(30px, -20px) scale(1.08);
+  }
+  66% {
+    transform: translate(-20px, 15px) scale(0.95);
+  }
 }
 @keyframes aurora-2 {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  33% { transform: translate(-25px, 25px) scale(1.05); }
-  66% { transform: translate(15px, -15px) scale(0.98); }
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(-25px, 25px) scale(1.05);
+  }
+  66% {
+    transform: translate(15px, -15px) scale(0.98);
+  }
 }
 @keyframes aurora-3 {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  33% { transform: translate(20px, 20px) scale(1.06); }
-  66% { transform: translate(-30px, -10px) scale(0.96); }
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(20px, 20px) scale(1.06);
+  }
+  66% {
+    transform: translate(-30px, -10px) scale(0.96);
+  }
 }
-.animate-aurora-1 { animation: aurora-1 20s ease-in-out infinite; }
-.animate-aurora-2 { animation: aurora-2 24s ease-in-out infinite; }
-.animate-aurora-3 { animation: aurora-3 18s ease-in-out infinite; }
+.animate-aurora-1 {
+  animation: aurora-1 20s ease-in-out infinite;
+}
+.animate-aurora-2 {
+  animation: aurora-2 24s ease-in-out infinite;
+}
+.animate-aurora-3 {
+  animation: aurora-3 18s ease-in-out infinite;
+}
 
 /* ===== Reduced Motion ===== */
 @media (prefers-reduced-motion: reduce) {
-  .hero-title { animation: none; }
-  .logo-mark { animation: none; }
+  .hero-title {
+    animation: none;
+  }
+  .logo-mark {
+    animation: none;
+  }
   .animate-aurora-1,
   .animate-aurora-2,
-  .animate-aurora-3 { animation: none; }
+  .animate-aurora-3 {
+    animation: none;
+  }
 }
 </style>
