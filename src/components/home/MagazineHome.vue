@@ -1,11 +1,14 @@
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted, onActivated, onDeactivated } from 'vue';
 import { useRouter } from 'vue-router';
 import { usePresenceStore } from '../../stores/presenceStore';
 import { useConfigStore } from '../../stores/configStore';
 import { useParticleBackground } from '../../composables/useParticleBackground';
 import { useTilt } from '../../composables/useTilt';
 import { useMouseParallax } from '../../composables/useMouseParallax';
+
+// 组件名供 AppLayout 的 keep-alive include 匹配（返回主页时秒开，避免整页重挂载）
+defineOptions({ name: 'MagazineHome' });
 import {
   MessagesSquare,
   Sparkles,
@@ -236,15 +239,48 @@ const dailyQuote = ref(quotes[Math.floor(Math.random() * quotes.length)]);
 const now = ref(new Date());
 let timer;
 
-onMounted(() => {
-  presenceStore.initPresence();
+const startClock = () => {
+  if (timer) return;
   timer = setInterval(() => {
     now.value = new Date();
   }, 1000);
+};
+
+onMounted(() => {
+  presenceStore.initPresence();
+  startClock();
+});
+
+// keep-alive 缓存场景：切到其他应用时暂停时钟、保存滚动位置，返回时恢复
+// （避免后台空转 + 返回后回到顶部要重新下滑）
+// 注意:不能依赖 onDeactivated 时读取 scrollTop——KeepAlive 移走 DOM 时浏览器已重置它，
+// 必须在滚动过程中实时保存。
+const scrollContainer = ref(null);
+let savedScrollTop = 0;
+const saveScroll = () => {
+  if (scrollContainer.value) savedScrollTop = scrollContainer.value.scrollTop;
+};
+onActivated(() => {
+  startClock();
+  if (scrollContainer.value) {
+    scrollContainer.value.addEventListener('scroll', saveScroll, { passive: true });
+    if (savedScrollTop > 0) {
+      scrollContainer.value.scrollTop = savedScrollTop;
+      savedScrollTop = 0;
+    }
+  }
+});
+onDeactivated(() => {
+  if (timer) clearInterval(timer);
+  timer = null;
+  if (scrollContainer.value) {
+    scrollContainer.value.removeEventListener('scroll', saveScroll);
+  }
 });
 
 onUnmounted(() => {
   if (timer) clearInterval(timer);
+  if (scrollContainer.value) scrollContainer.value.removeEventListener('scroll', saveScroll);
 });
 
 // ---------- Parallax helpers ----------
@@ -296,6 +332,7 @@ const heroGlowStyle = computed(() => ({
 
     <!-- ===== Scroll Container ===== -->
     <div
+      ref="scrollContainer"
       class="relative z-10 h-full w-full overflow-y-auto overflow-x-hidden scroll-smooth"
     >
       <main class="max-w-[1320px] mx-auto px-5 md:px-10 pt-6 md:pt-10 pb-24">

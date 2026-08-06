@@ -68,7 +68,12 @@ const goHome = () => {
 
     <!-- App Content -->
     <main class="flex-1 overflow-hidden relative">
-      <router-view />
+      <!-- keep-alive 缓存主页：返回时直接恢复 DOM，避免重新挂载（壁纸大图/粒子/光晕重建）导致手机端卡顿 -->
+      <router-view v-slot="{ Component }">
+        <keep-alive :include="['MagazineHome']">
+          <component :is="Component" />
+        </keep-alive>
+      </router-view>
     </main>
   </div>
 </template>

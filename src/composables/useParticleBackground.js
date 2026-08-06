@@ -1,4 +1,4 @@
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted, onActivated, onDeactivated } from 'vue';
 
 // 触屏设备(手机/平板)自动降级:大幅减少粒子数、降低连线复杂度,
 // 避免低端机发热卡顿;同时页面不可见时暂停动画节省电量
@@ -139,6 +139,22 @@ export function useParticleBackground(canvasRef) {
     }
   }
 
+  // keep-alive 场景：主页被缓存但切到其他应用时暂停 rAF，返回时恢复
+  let active = true;
+  function startAnim() {
+    if (active || animId) return;
+    active = true;
+    window.addEventListener('mousemove', onMouseMove);
+    animate();
+  }
+  function stopAnim() {
+    if (!active) return;
+    active = false;
+    if (animId) cancelAnimationFrame(animId);
+    animId = null;
+    window.removeEventListener('mousemove', onMouseMove);
+  }
+
   onMounted(() => {
     window.addEventListener('resize', resize);
     document.addEventListener('visibilitychange', onVisibilityChange);
@@ -148,6 +164,9 @@ export function useParticleBackground(canvasRef) {
     init();
     animate();
   });
+
+  onActivated(() => startAnim());
+  onDeactivated(() => stopAnim());
 
   onUnmounted(() => {
     window.removeEventListener('resize', resize);
