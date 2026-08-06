@@ -197,7 +197,10 @@ const MAP_HEIGHT = 500;
 
 const fetchWorldMap = async () => {
   try {
-    const res = await fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json');
+    let res = await fetch('/data/countries-110m.json');
+    if (!res.ok) {
+      res = await fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json');
+    }
     if (!res.ok) throw new Error('map fetch failed');
     const topology = await res.json();
     const geojson = feature(topology, topology.objects.countries);

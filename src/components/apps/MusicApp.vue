@@ -13,7 +13,7 @@ const playlist = reactive([
     id: 1,
     title: 'Neon Nights',
     artist: 'SynthWave Explorer',
-    cover: 'https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?q=80&w=1000&auto=format&fit=crop',
+    cover: '/wallpapers/cover-1.jpg',
     url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
     duration: '6:12'
   },
@@ -21,7 +21,7 @@ const playlist = reactive([
     id: 2,
     title: 'Digital Dreams',
     artist: 'Cloud Traveler',
-    cover: 'https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=1000&auto=format&fit=crop',
+    cover: '/wallpapers/cover-2.jpg',
     url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3',
     duration: '7:05'
   },
@@ -29,7 +29,7 @@ const playlist = reactive([
     id: 3,
     title: 'Cyberpunk Soul',
     artist: 'Matrix Beats',
-    cover: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop',
+    cover: '/wallpapers/cover-3.jpg',
     url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3',
     duration: '5:48'
   }
