@@ -233,45 +233,15 @@ const dailyQuote = ref(quotes[Math.floor(Math.random() * quotes.length)]);
 const now = ref(new Date());
 let timer;
 
-// ---------- Reveal on scroll ----------
-const revealEls = [];
-const setReveal = (el) => {
-  if (el && !revealEls.includes(el)) revealEls.push(el);
-};
-
-let io = null;
-let forceRevealTimer = null;
 onMounted(() => {
   presenceStore.initPresence();
   timer = setInterval(() => {
     now.value = new Date();
   }, 1000);
-
-  requestAnimationFrame(() => {
-    io = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('revealed');
-            io.unobserve(entry.target);
-          }
-        });
-      },
-      { threshold: 0.05, rootMargin: '0px 0px -5% 0px' }
-    );
-    revealEls.forEach((el) => io.observe(el));
-  });
-
-  // Safety net: force reveal all elements if observer somehow misses them
-  forceRevealTimer = setTimeout(() => {
-    revealEls.forEach((el) => el?.classList.add('revealed'));
-  }, 1500);
 });
 
 onUnmounted(() => {
   if (timer) clearInterval(timer);
-  if (forceRevealTimer) clearTimeout(forceRevealTimer);
-  if (io) io.disconnect();
 });
 
 // ---------- Parallax helpers ----------
@@ -286,8 +256,12 @@ const heroGlowStyle = computed(() => ({
 
 <template>
   <div class="magazine relative h-screen w-screen overflow-hidden bg-[#030305] text-slate-100 select-none">
-    <!-- ===== Particle Canvas ===== -->
-    <canvas ref="canvasRef" class="fixed inset-0 z-0 pointer-events-none opacity-70"></canvas>
+    <!-- ===== Particle Canvas (above background) ===== -->
+    <canvas
+      v-if="configStore.settings.particles"
+      ref="canvasRef"
+      class="fixed inset-0 z-[1] pointer-events-none opacity-70"
+    ></canvas>
 
     <!-- ===== Ambient Background ===== -->
     <div class="fixed inset-0 z-0 pointer-events-none">
@@ -296,9 +270,9 @@ const heroGlowStyle = computed(() => ({
         v-if="configStore.wallpaper"
         :src="configStore.wallpaper"
         alt=""
-        class="absolute inset-0 w-full h-full object-cover opacity-15 saturate-50"
+        class="absolute inset-0 w-full h-full object-cover opacity-40 saturate-100"
       />
-      <div class="absolute inset-0 bg-[#030305]/85"></div>
+      <div class="absolute inset-0 bg-[#030305]/55"></div>
 
       <!-- Soft aurora orbs -->
       <div
@@ -320,8 +294,7 @@ const heroGlowStyle = computed(() => ({
       <main class="max-w-[1320px] mx-auto px-5 md:px-10 pt-6 md:pt-10 pb-24">
         <!-- ===== Top Bar ===== -->
         <header
-          :ref="setReveal"
-          class="flex items-center justify-between mb-10 md:mb-14 reveal"
+          class="flex items-center justify-between mb-10 md:mb-14"
         >
           <div class="flex items-center gap-3">
             <div
@@ -367,8 +340,7 @@ const heroGlowStyle = computed(() => ({
         >
           <!-- ========== HERO COVER CARD ========== -->
           <div
-            :ref="setReveal"
-            class="reveal col-span-2 md:col-span-7 md:row-span-4 transition-delay-0"
+            class="col-span-2 md:col-span-7 md:row-span-4"
           >
             <article
               ref="heroTilt.tiltEl"
@@ -470,13 +442,11 @@ const heroGlowStyle = computed(() => ({
           <div
             v-for="(app, i) in apps"
             :key="app.id"
-            :ref="setReveal"
-            class="reveal col-span-1"
+            class="col-span-1"
             :class="app.gridClass"
-            :style="{ transitionDelay: `${(i + 1) * 70}ms` }"
           >
             <article
-              :ref="appTilts[i].tiltEl"
+              :ref="(el) => { appTilts[i].tiltEl.value = el }"
               class="tilt-card app-card group cursor-pointer relative h-full overflow-hidden rounded-2xl flex flex-col justify-between p-5 min-h-[150px] md:min-h-0"
               :style="appTilts[i].transform"
               @click="openApp(app)"
@@ -544,9 +514,7 @@ const heroGlowStyle = computed(() => ({
 
           <!-- ========== QUOTE CARD ========== -->
           <div
-            :ref="setReveal"
-            class="reveal col-span-2 md:col-span-4 md:row-span-2"
-            :style="{ transitionDelay: '350ms' }"
+            class="col-span-2 md:col-span-4 md:row-span-2"
           >
             <article
               ref="quoteTilt.tiltEl"
@@ -583,13 +551,11 @@ const heroGlowStyle = computed(() => ({
           <div
             v-for="(card, i) in smallCards"
             :key="card.id"
-            :ref="setReveal"
-            class="reveal col-span-1"
+            class="col-span-1"
             :class="card.gridClass"
-            :style="{ transitionDelay: `${400 + i * 70}ms` }"
           >
             <article
-              :ref="smallCardTilts[i].tiltEl"
+              :ref="(el) => { smallCardTilts[i].tiltEl.value = el }"
               class="tilt-card app-card group cursor-pointer relative h-full overflow-hidden rounded-2xl flex items-center gap-4 p-5 min-h-[110px] md:min-h-0"
               :style="smallCardTilts[i].transform"
               @click="openApp(card)"
@@ -640,18 +606,6 @@ const heroGlowStyle = computed(() => ({
 </template>
 
 <style scoped>
-/* ===== Scroll Reveal ===== */
-.reveal {
-  opacity: 0.92;
-  transform: translateY(8px) scale(0.99);
-  transition: opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1),
-    transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
-}
-.reveal.revealed {
-  opacity: 1;
-  transform: translateY(0) scale(1);
-}
-
 /* ===== Tilt Cards ===== */
 .tilt-card {
   transition: transform 0.15s ease-out;
@@ -792,10 +746,6 @@ const heroGlowStyle = computed(() => ({
 
 /* ===== Reduced Motion ===== */
 @media (prefers-reduced-motion: reduce) {
-  .reveal {
-    opacity: 1;
-    transform: none;
-  }
   .hero-title { animation: none; }
   .logo-mark { animation: none; }
   .animate-aurora-1,

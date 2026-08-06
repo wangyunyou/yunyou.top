@@ -44,13 +44,13 @@ src/
 │       ├── GalleryApp.vue       # 相册（多源图片 API）
 │       ├── GameCenterApp.vue    # 游戏厅（贪吃蛇 + 2048 + 俄罗斯方块）
 │       ├── MusicApp.vue         # 音乐播放器
-│       ├── SettingsApp.vue      # 设置中心（壁纸切换）
+│       ├── SettingsApp.vue      # 设置中心（10 张壁纸预设、粒子开关、清数据、关于）
 │       ├── SystemMonitorApp.vue # 系统监控（Web Performance/Battery API）
 │       ├── LandingGeneratorApp.vue # AI 落地页生成器（3 套模板导出）
 │       ├── VisitorMapApp.vue    # 世界时钟（真实地图 + IP 定位 + 城市时钟）
 │       └── CoupletApp.vue       # AI 对联生成器（智谱 API）
 ├── stores/
-│   ├── configStore.js          # 用户配置（壁纸 + 预设壁纸列表，localStorage 持久化）
+│   ├── configStore.js          # 用户配置（10 张壁纸预设 + 粒子开关 + resetAll，localStorage 持久化）
 │   └── presenceStore.js        # 在线人数（Supabase Realtime Presence）
 └── lib/
     └── supabase.js             # Supabase 客户端（Key 已内嵌，无需环境变量）
@@ -95,7 +95,7 @@ cp .env.example .env.local
 
 ## 注意事项
 
-- MagazineHome.vue 使用 scoped CSS 的 `.reveal` 类做滚动浮现动画。**初始 opacity 不能设为 0**（现在为 0.92），否则 IntersectionObserver 失败时卡片不可见；另有 1.5s 兜底定时器强制 reveal。
+- MagazineHome 主页卡片**直接显示**，无滚动浮现动画（曾实现过 reveal 动画 + 设置开关，因效果感知度低且增加复杂度，已于 2026-08 移除，勿重新引入）。主页仅保留粒子背景（受 `configStore.settings.particles` 控制）和壁纸层（`opacity-40` + `bg-[#030305]/55` 暗化遮罩，注意不要调太低否则壁纸不可见）。
 - 主页卡片网格是 12 列 `grid-flow-dense`，新增卡片需保证 `col-span` 总和为 12 的倍数才能排整齐。
 - Supabase 连接失败只影响聊天室和在线人数，其他功能不受影响。
 - 音乐/视频/相册的第三方资源 API 均配置了 fallback 源，修改时注意保留。
