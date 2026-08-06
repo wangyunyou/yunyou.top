@@ -2,6 +2,9 @@
 import { ref, onMounted, onUnmounted, nextTick } from 'vue';
 import { Send, Hash, Users, ShieldAlert, Loader2, WifiOff } from 'lucide-vue-next';
 import { supabase } from '../../lib/supabase';
+import { useVisualViewport } from '../../composables/useVisualViewport';
+
+const { containerStyle } = useVisualViewport();
 
 const messages = ref([]);
 const newMessage = ref('');
@@ -223,7 +226,10 @@ onUnmounted(() => {
 
 
 <template>
-  <div class="h-full flex flex-col bg-slate-900/40 backdrop-blur-md text-slate-100 overflow-hidden">
+  <div
+    class="h-full flex flex-col bg-slate-900/40 backdrop-blur-md text-slate-100 overflow-hidden"
+    :style="containerStyle"
+  >
     <!-- Chat Header -->
     <div class="p-4 border-b border-white/10 flex items-center justify-between bg-white/5">
       <div class="flex items-center gap-3">
@@ -298,7 +304,7 @@ onUnmounted(() => {
     </div>
 
     <!-- Input Area -->
-    <div class="p-4 bg-white/5 border-t border-white/10">
+    <div class="p-4 bg-white/5 border-t border-white/10 pb-safe-min">
       <form @submit.prevent="sendMessage" class="flex gap-3">
         <input 
           v-model="newMessage"
@@ -306,7 +312,7 @@ onUnmounted(() => {
           :maxlength="maxMessageLength"
           :disabled="isSending"
           placeholder="输入消息，匿名发送..."
-          class="flex-1 bg-black/20 border border-white/10 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-sky-500/50 transition-all placeholder:text-slate-600"
+          class="flex-1 bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-sky-500/50 transition-all placeholder:text-slate-600"
           @input="sendError = ''"
         />
         <button 

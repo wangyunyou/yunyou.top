@@ -7,6 +7,48 @@ body {
   margin: 0;
   padding: 0;
   overflow: hidden;
+  height: 100%;
+  width: 100%;
+}
+
+#app {
+  height: 100%;
+}
+
+/* ===== Mobile safe-area utilities ===== */
+.pt-safe {
+  padding-top: env(safe-area-inset-top);
+}
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.pt-safe-min {
+  padding-top: max(env(safe-area-inset-top), 0.5rem);
+}
+.pb-safe-min {
+  padding-bottom: max(env(safe-area-inset-bottom), 0.5rem);
+}
+/* Viewport height: fallback → dvh (handles mobile browser chrome) */
+.h-viewport {
   height: 100vh;
-  width: 100vw;
+  height: 100dvh;
+}
+.min-h-viewport {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+/* ===== Touch feedback: subtle press on tap (coarse pointers only) ===== */
+@media (pointer: coarse) {
+  .tap-feedback {
+    transition: transform 0.12s ease-out, opacity 0.12s ease-out;
+  }
+  .tap-feedback:active {
+    transform: scale(0.96);
+    opacity: 0.85;
+  }
+  /* Disable hover-only decorative effects on touch devices */
+  .no-touch-hover {
+    transform: none !important;
+  }
 }

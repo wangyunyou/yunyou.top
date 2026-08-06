@@ -259,7 +259,7 @@ const heroGlowStyle = computed(() => ({
 
 <template>
   <div
-    class="magazine relative h-screen w-screen overflow-hidden bg-[#030305] text-slate-100 select-none"
+    class="magazine relative h-viewport w-screen overflow-hidden bg-[#030305] text-slate-100"
   >
     <!-- ===== Particle Canvas (above background) ===== -->
     <canvas
@@ -300,7 +300,7 @@ const heroGlowStyle = computed(() => ({
     >
       <main class="max-w-[1320px] mx-auto px-5 md:px-10 pt-6 md:pt-10 pb-24">
         <!-- ===== Top Bar ===== -->
-        <header class="flex items-center justify-between mb-10 md:mb-14">
+        <header class="flex items-center justify-between mb-8 md:mb-14 pt-safe">
           <div class="flex items-center gap-3">
             <div
               class="logo-mark w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-400 via-violet-500 to-fuchsia-500 flex items-center justify-center font-serif italic font-black text-white text-lg shadow-[0_0_30px_rgba(139,92,246,0.45)]"
@@ -355,7 +355,7 @@ const heroGlowStyle = computed(() => ({
           <div class="col-span-2 md:col-span-7 md:row-span-4">
             <article
               ref="heroTilt.tiltEl"
-              class="hero-card group relative h-full overflow-hidden rounded-[28px] p-7 md:p-10 flex flex-col justify-between min-h-[420px] md:min-h-0 cursor-default"
+              class="hero-card group relative h-full overflow-hidden rounded-[28px] p-6 md:p-10 flex flex-col justify-between min-h-[340px] md:min-h-0 cursor-default"
               :style="heroTilt.transform"
               @mousemove="heroTilt.onMouseMove"
               @mouseenter="heroTilt.onMouseEnter"
@@ -490,7 +490,7 @@ const heroGlowStyle = computed(() => ({
                   appTilts[i].tiltEl.value = el;
                 }
               "
-              class="tilt-card app-card group cursor-pointer relative h-full overflow-hidden rounded-2xl flex flex-col justify-between p-5 min-h-[150px] md:min-h-0"
+              class="tilt-card app-card group cursor-pointer relative h-full overflow-hidden rounded-2xl flex flex-col justify-between p-4 md:p-5 min-h-[140px] md:min-h-0 tap-feedback"
               :style="appTilts[i].transform"
               @click="openApp(app)"
               @mousemove="appTilts[i].onMouseMove"
@@ -550,7 +550,7 @@ const heroGlowStyle = computed(() => ({
 
               <div class="relative z-10 mt-3">
                 <div
-                  class="text-[9px] font-semibold tracking-[0.3em] text-white/40 uppercase mb-1.5"
+                  class="text-[10px] font-semibold tracking-[0.3em] text-white/40 uppercase mb-1.5"
                 >
                   {{ app.tag }}
                 </div>
@@ -560,7 +560,7 @@ const heroGlowStyle = computed(() => ({
                   {{ app.title }}
                 </h3>
                 <p
-                  class="text-[11px] md:text-xs text-white/55 mt-1.5 leading-relaxed"
+                  class="text-xs md:text-xs text-white/55 mt-1.5 leading-relaxed line-clamp-2"
                 >
                   {{ app.desc }}
                 </p>
@@ -576,7 +576,7 @@ const heroGlowStyle = computed(() => ({
           <div class="col-span-2 md:col-span-4 md:row-span-2">
             <article
               ref="quoteTilt.tiltEl"
-              class="tilt-card quote-card group relative h-full overflow-hidden rounded-2xl p-6 flex flex-col justify-between min-h-[170px] md:min-h-0"
+              class="tilt-card quote-card group relative h-full overflow-hidden rounded-2xl p-6 flex flex-col justify-between min-h-[160px] md:min-h-0"
               :style="quoteTilt.transform"
               @mousemove="quoteTilt.onMouseMove"
               @mouseenter="quoteTilt.onMouseEnter"
@@ -628,7 +628,7 @@ const heroGlowStyle = computed(() => ({
                   smallCardTilts[i].tiltEl.value = el;
                 }
               "
-              class="tilt-card app-card group cursor-pointer relative h-full overflow-hidden rounded-2xl flex items-center gap-4 p-5 min-h-[110px] md:min-h-0"
+              class="tilt-card app-card group cursor-pointer relative h-full overflow-hidden rounded-2xl flex items-center gap-3 md:gap-4 p-4 md:p-5 min-h-[100px] md:min-h-0 tap-feedback"
               :style="smallCardTilts[i].transform"
               @click="openApp(card)"
               @mousemove="smallCardTilts[i].onMouseMove"
@@ -666,7 +666,7 @@ const heroGlowStyle = computed(() => ({
               </div>
               <div class="relative z-10 min-w-0">
                 <div
-                  class="text-[9px] font-semibold tracking-[0.25em] text-white/40 uppercase mb-0.5"
+                  class="text-[10px] font-semibold tracking-[0.25em] text-white/40 uppercase mb-0.5"
                 >
                   {{ card.tag }}
                 </div>
@@ -675,7 +675,7 @@ const heroGlowStyle = computed(() => ({
                 >
                   {{ card.title }}
                 </h3>
-                <p class="text-[10px] md:text-[11px] text-white/55 truncate">
+                <p class="text-[11px] md:text-[11px] text-white/55 truncate">
                   {{ card.desc }}
                 </p>
               </div>

@@ -375,7 +375,7 @@ const cityPoints = computed(() =>
     </div>
 
     <!-- World Clocks Grid -->
-    <div class="px-6 pt-4 pb-6 overflow-y-auto shrink-0">
+    <div class="px-6 pt-4 pb-6 overflow-y-auto shrink-0 pb-safe">
       <div class="flex items-center gap-2 mb-3">
         <Clock class="w-4 h-4 text-cyan-400" />
         <span class="text-xs font-semibold text-slate-300 uppercase tracking-wider">全球时钟 (实时)</span>

@@ -9,7 +9,7 @@
     <div class="relative z-10 text-center px-6">
       <!-- 404 大字 -->
       <div
-        class="text-[140px] md:text-[200px] font-black leading-none tracking-[-0.06em] select-none"
+        class="text-[110px] md:text-[200px] font-black leading-none tracking-[-0.06em] select-none"
         style="
           background: linear-gradient(135deg, #818cf8 0%, #c084fc 40%, #38bdf8 100%);
           -webkit-background-clip: text;

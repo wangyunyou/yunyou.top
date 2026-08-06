@@ -153,7 +153,7 @@ const seek = (e) => {
 </script>
 
 <template>
-  <div class="h-full flex flex-col bg-slate-950 text-slate-200 overflow-hidden select-none">
+  <div class="h-full relative flex flex-col bg-slate-950 text-slate-200 overflow-hidden select-none">
     <!-- Player Main Area -->
     <div class="flex-1 min-h-0 flex flex-col items-center justify-center p-6 md:p-8 relative">
       <!-- Animated Background Mesh -->
@@ -216,7 +216,7 @@ const seek = (e) => {
     </div>
 
     <!-- Bottom Bar -->
-    <div class="h-16 border-t border-white/5 bg-white/5 backdrop-blur-md px-6 flex items-center justify-between z-20">
+    <div class="min-h-16 border-t border-white/5 bg-white/5 backdrop-blur-md px-4 md:px-6 py-2 flex items-center justify-between z-20 pb-safe-min">
       <div class="flex items-center gap-4">
         <button @click="showPlaylist = !showPlaylist" :class="showPlaylist ? 'text-purple-400' : 'text-slate-400'" class="hover:text-white transition-colors">
           <ListMusic class="w-5 h-5" />

@@ -1,12 +1,19 @@
 import { ref, onMounted, onUnmounted } from 'vue';
 
+// 触屏设备(手机/平板)自动降级:大幅减少粒子数、降低连线复杂度,
+// 避免低端机发热卡顿;同时页面不可见时暂停动画节省电量
+const isCoarsePointer = typeof window !== 'undefined' && window.matchMedia
+  ? window.matchMedia('(pointer: coarse)').matches
+  : false;
+
+const PARTICLE_COUNT = isCoarsePointer ? 12 : 48;
+const CONNECTION_DIST = isCoarsePointer ? 80 : 110;
+const MOUSE_RADIUS = 160;
+
 export function useParticleBackground(canvasRef) {
   const mouse = ref({ x: -1000, y: -1000 });
   let ctx, width, height, animId;
   let particles = [];
-  const PARTICLE_COUNT = 48;
-  const CONNECTION_DIST = 110;
-  const MOUSE_RADIUS = 160;
 
   const colors = [
     { r: 56, g: 189, b: 248 },  // sky-400
@@ -33,14 +40,16 @@ export function useParticleBackground(canvasRef) {
       this.x += this.vx;
       this.y += this.vy;
 
-      // Mouse repulsion
-      const dx = this.x - mouse.value.x;
-      const dy = this.y - mouse.value.y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      if (dist < MOUSE_RADIUS && dist > 0) {
-        const force = (MOUSE_RADIUS - dist) / MOUSE_RADIUS;
-        this.vx += (dx / dist) * force * 0.15;
-        this.vy += (dy / dist) * force * 0.15;
+      // Mouse repulsion (skipped on touch devices - no mousemove anyway)
+      if (!isCoarsePointer) {
+        const dx = this.x - mouse.value.x;
+        const dy = this.y - mouse.value.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < MOUSE_RADIUS && dist > 0) {
+          const force = (MOUSE_RADIUS - dist) / MOUSE_RADIUS;
+          this.vx += (dx / dist) * force * 0.15;
+          this.vy += (dy / dist) * force * 0.15;
+        }
       }
 
       // Speed damping
@@ -117,16 +126,33 @@ export function useParticleBackground(canvasRef) {
     mouse.value = { x: e.clientX, y: e.clientY };
   }
 
+  // 页面隐藏时暂停动画(移动端切后台/锁屏省电)
+  let pageHidden = false;
+  function onVisibilityChange() {
+    if (document.hidden) {
+      pageHidden = true;
+      if (animId) cancelAnimationFrame(animId);
+      animId = null;
+    } else if (pageHidden) {
+      pageHidden = false;
+      if (!animId) animate();
+    }
+  }
+
   onMounted(() => {
-    window.addEventListener('mousemove', onMouseMove);
     window.addEventListener('resize', resize);
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    if (!isCoarsePointer) {
+      window.addEventListener('mousemove', onMouseMove);
+    }
     init();
     animate();
   });
 
   onUnmounted(() => {
-    window.removeEventListener('mousemove', onMouseMove);
     window.removeEventListener('resize', resize);
+    window.removeEventListener('mousemove', onMouseMove);
+    document.removeEventListener('visibilitychange', onVisibilityChange);
     if (animId) cancelAnimationFrame(animId);
   });
 }

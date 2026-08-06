@@ -65,7 +65,7 @@ onUnmounted(() => {
       <p class="text-[10px] text-slate-500 mt-1">数据来源：Web Performance & Device API (实时抓取)</p>
     </div>
 
-    <div class="p-6 space-y-6">
+    <div class="p-6 space-y-6 pb-safe">
       <!-- Hardware Hardware Specs -->
       <div class="grid grid-cols-2 gap-4">
         <div class="bg-white/5 rounded-2xl p-4 border border-white/10 flex items-center gap-4">

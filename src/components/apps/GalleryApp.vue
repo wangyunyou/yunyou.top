@@ -192,7 +192,7 @@ onUnmounted(() => {
 
     <!-- History Bar -->
     <div
-      class="h-24 border-t border-white/5 bg-slate-900/50 p-3 flex gap-3 overflow-x-auto scrollbar-none"
+      class="h-24 border-t border-white/5 bg-slate-900/50 p-3 flex gap-3 overflow-x-auto scrollbar-none pb-safe-min"
     >
       <div
         v-for="(src, idx) in history"

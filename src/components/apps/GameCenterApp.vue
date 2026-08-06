@@ -595,6 +595,14 @@ const handleTouchStart = (e) => {
   touchStartY = e.touches[0].clientY;
 };
 
+// 贪吃蛇虚拟方向键(移动端)
+const snakeSetDir = (x, y) => {
+  // 禁止原地掉头
+  if (x !== 0 && direction.value.x === -x && direction.value.y === 0) return;
+  if (y !== 0 && direction.value.y === -y && direction.value.x === 0) return;
+  direction.value = { x, y };
+};
+
 const handleTouchEnd = (e) => {
   const dx = e.changedTouches[0].clientX - touchStartX;
   const dy = e.changedTouches[0].clientY - touchStartY;
@@ -706,7 +714,7 @@ onUnmounted(() => {
     </div>
 
     <div
-      class="flex-1 relative flex items-start justify-center p-4 md:p-8 overflow-y-auto overflow-x-hidden"
+      class="flex-1 relative flex items-start justify-center p-4 md:p-8 overflow-y-auto overflow-x-hidden pb-safe"
     >
       <!-- Select -->
       <div
@@ -767,7 +775,7 @@ onUnmounted(() => {
       <!-- Snake -->
       <div
         v-if="currentGame === 'snake'"
-        class="relative animate-in fade-in zoom-in duration-500"
+        class="relative flex flex-col items-center gap-4 animate-in fade-in zoom-in duration-500"
         @touchstart.passive="handleTouchStart"
         @touchmove.prevent
         @touchend.passive="handleTouchEnd"
@@ -812,6 +820,32 @@ onUnmounted(() => {
           >
             再来一局
           </button>
+        </div>
+
+        <!-- Snake Touch D-pad (mobile) -->
+        <div class="md:hidden grid grid-cols-3 gap-2 w-full max-w-[240px] select-none">
+          <div></div>
+          <button
+            @click="snakeSetDir(0, -1)"
+            aria-label="向上"
+            class="aspect-square bg-white/5 active:bg-white/20 rounded-xl flex items-center justify-center text-2xl border border-white/10"
+          >↑</button>
+          <div></div>
+          <button
+            @click="snakeSetDir(-1, 0)"
+            aria-label="向左"
+            class="aspect-square bg-white/5 active:bg-white/20 rounded-xl flex items-center justify-center text-2xl border border-white/10"
+          >←</button>
+          <button
+            @click="snakeSetDir(0, 1)"
+            aria-label="向下"
+            class="aspect-square bg-white/5 active:bg-white/20 rounded-xl flex items-center justify-center text-2xl border border-white/10"
+          >↓</button>
+          <button
+            @click="snakeSetDir(1, 0)"
+            aria-label="向右"
+            class="aspect-square bg-white/5 active:bg-white/20 rounded-xl flex items-center justify-center text-2xl border border-white/10"
+          >→</button>
         </div>
       </div>
 

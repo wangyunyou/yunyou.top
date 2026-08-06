@@ -165,7 +165,7 @@ const runtime = (() => {
     </div>
 
     <!-- Footer -->
-    <div class="p-4 text-center text-[10px] text-slate-600">
+    <div class="p-4 text-center text-[10px] text-slate-600 pb-safe-min">
       <span class="inline-flex items-center gap-1">
         <RotateCcw class="w-3 h-3" />
         yunyou.top · 设置即存本地，仅对当前设备生效

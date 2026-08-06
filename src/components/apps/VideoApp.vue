@@ -124,12 +124,12 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="h-full bg-black flex overflow-hidden select-none font-sans">
-    <!-- Sidebar: Categories -->
+  <div class="h-full bg-black flex flex-col md:flex-row overflow-hidden select-none font-sans">
+    <!-- Sidebar: Categories (horizontal on mobile, vertical on desktop) -->
     <div
-      class="w-20 md:w-48 border-r border-white/5 bg-slate-900/80 backdrop-blur-xl flex flex-col items-center py-6 gap-6"
+      class="w-full md:w-48 md:border-r border-b md:border-b-0 border-white/5 bg-slate-900/80 backdrop-blur-xl flex md:flex-col items-center md:items-stretch py-2 md:py-6 px-2 md:px-3 gap-2 md:gap-6 shrink-0 z-10"
     >
-      <div class="mb-4 px-4 text-center">
+      <div class="hidden md:block mb-4 px-4 text-center">
         <div
           class="w-12 h-12 bg-rose-500 rounded-2xl flex items-center justify-center shadow-lg shadow-rose-500/20 mx-auto mb-2"
         >
@@ -142,26 +142,26 @@ onUnmounted(() => {
         </h2>
       </div>
 
-      <div class="flex-1 w-full px-3 space-y-3">
+      <div class="flex-1 flex md:flex-col w-full space-x-2 md:space-x-0 md:space-y-3 overflow-x-auto scrollbar-none md:overflow-visible">
         <button
           v-for="type in shortVideoTypes"
           :key="type.id"
           @click="selectType(type)"
-          class="w-full p-3 rounded-2xl flex flex-col md:flex-row items-center gap-3 transition-all duration-300"
+          class="flex-1 md:flex-none md:w-full p-2.5 md:p-3 rounded-2xl flex items-center justify-center md:justify-start gap-2 md:gap-3 transition-all duration-300 shrink-0 tap-feedback"
           :class="
             currentType.id === type.id
-              ? 'bg-rose-500 text-white shadow-lg shadow-rose-500/30 scale-105'
+              ? 'bg-rose-500 text-white shadow-lg shadow-rose-500/30 md:scale-105'
               : 'text-slate-500 hover:bg-white/5 hover:text-slate-200'
           "
         >
-          <component :is="type.icon" class="w-5 h-5" />
-          <span class="hidden md:block text-xs font-bold">{{ type.name }}</span>
+          <component :is="type.icon" class="w-5 h-5 shrink-0" />
+          <span class="hidden md:block text-xs font-bold whitespace-nowrap">{{ type.name }}</span>
         </button>
       </div>
 
       <button
         @click="refreshVideo"
-        class="w-12 h-12 md:w-40 md:h-12 bg-white/5 hover:bg-white/10 text-slate-300 rounded-2xl flex items-center justify-center gap-2 transition-all"
+        class="hidden md:flex w-12 h-12 md:w-40 md:h-12 bg-white/5 hover:bg-white/10 text-slate-300 rounded-2xl items-center justify-center gap-2 transition-all"
       >
         <RefreshCw class="w-5 h-5" :class="isLoading ? 'animate-spin' : ''" />
         <span class="hidden md:block text-xs font-bold">换一个</span>
@@ -172,13 +172,14 @@ onUnmounted(() => {
     <div
       class="flex-1 relative flex flex-col group overflow-hidden bg-slate-950"
       @mousemove="handleMouseMove"
+      @touchstart="handleMouseMove"
     >
       <!-- Player Container -->
       <div
-        class="flex-1 min-h-0 flex items-center justify-center p-4 md:p-6 lg:p-8"
+        class="flex-1 min-h-0 flex items-center justify-center p-3 md:p-4 lg:p-8"
       >
         <div
-          class="relative h-full max-h-full aspect-[9/16] bg-black rounded-[2.5rem] overflow-hidden shadow-[0_0_100px_rgba(244,63,94,0.1)] border-[6px] border-white/5 ring-1 ring-white/10"
+          class="relative h-full max-h-full aspect-[9/16] bg-black rounded-[1.75rem] md:rounded-[2.5rem] overflow-hidden shadow-[0_0_100px_rgba(244,63,94,0.1)] border-4 md:border-[6px] border-white/5 ring-1 ring-white/10"
         >
           <!-- Loading State -->
           <div
@@ -269,6 +270,13 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;

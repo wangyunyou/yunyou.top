@@ -531,7 +531,7 @@ const openInNewTab = () => {
 <template>
   <div class="h-full flex flex-col lg:flex-row bg-slate-950 text-slate-200 overflow-hidden font-sans">
     <!-- ===== Left Panel: Input & Controls ===== -->
-    <div class="lg:w-[380px] lg:h-full shrink-0 flex flex-col border-r border-white/5 bg-slate-900/50 backdrop-blur-xl overflow-y-auto">
+    <div class="h-[48%] lg:h-full lg:w-[380px] shrink-0 flex flex-col border-r border-white/5 bg-slate-900/50 backdrop-blur-xl overflow-y-auto pb-safe-min">
       <!-- Header -->
       <div class="p-5 border-b border-white/5 shrink-0">
         <div class="flex items-center gap-3">

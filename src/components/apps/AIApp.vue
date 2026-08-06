@@ -9,6 +9,9 @@ import {
   Trash2,
   Info,
 } from 'lucide-vue-next';
+import { useVisualViewport } from '../../composables/useVisualViewport';
+
+const { containerStyle } = useVisualViewport();
 
 let savedMessages = null;
 try {
@@ -189,6 +192,7 @@ const clearChat = () => {
 <template>
   <div
     class="h-full flex flex-col bg-slate-950 text-slate-200 overflow-hidden font-sans"
+    :style="containerStyle"
   >
     <!-- Header -->
     <div
@@ -263,7 +267,7 @@ const clearChat = () => {
     </div>
 
     <!-- Input Area -->
-    <div class="p-6 bg-slate-900/50 backdrop-blur-xl border-t border-white/5">
+    <div class="p-4 md:p-6 bg-slate-900/50 backdrop-blur-xl border-t border-white/5 pb-safe-min">
       <div class="max-w-3xl mx-auto relative group">
         <textarea
           ref="textareaRef"
@@ -271,7 +275,7 @@ const clearChat = () => {
           @input="adjustTextarea"
           @keydown.enter="
             (e) => {
-              if (!e.shiftKey) {
+              if (!e.shiftKey && !isComposing) {
                 e.preventDefault();
                 sendMessage();
               }
@@ -280,13 +284,13 @@ const clearChat = () => {
           @compositionstart="isComposing = true"
           @compositionend="isComposing = false"
           placeholder="给云优 AI 发送消息... (Shift+Enter 换行)"
-          class="w-full bg-slate-950 border border-white/10 rounded-2xl px-5 py-4 pr-14 text-sm focus:outline-none focus:border-indigo-500/50 transition-all placeholder:text-slate-600 resize-none h-14 max-h-32 scrollbar-none"
+          class="w-full bg-slate-950 border border-white/10 rounded-2xl px-4 py-3.5 pr-14 text-sm focus:outline-none focus:border-indigo-500/50 transition-all placeholder:text-slate-600 resize-none h-14 max-h-32 scrollbar-none"
           :disabled="isTyping"
         ></textarea>
         <button
           @click="sendMessage"
           :disabled="!input.trim() || isTyping"
-          class="absolute right-3 bottom-3 p-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-20 disabled:hover:bg-indigo-600 text-white rounded-xl transition-all active:scale-90"
+          class="absolute right-2.5 bottom-2.5 p-2.5 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-20 disabled:hover:bg-indigo-600 text-white rounded-xl transition-all active:scale-90"
         >
           <Send class="w-5 h-5" />
         </button>

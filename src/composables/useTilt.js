@@ -1,5 +1,10 @@
 import { ref } from 'vue';
 
+// 触屏设备(pointer: coarse)下 3D tilt 无意义且会干扰滚动/点击,直接禁用
+const isCoarsePointer = typeof window !== 'undefined' && window.matchMedia
+  ? window.matchMedia('(pointer: coarse)').matches
+  : false;
+
 export function useTilt() {
   const tiltEl = ref(null);
   const transform = ref('');
@@ -8,7 +13,7 @@ export function useTilt() {
   const isHovering = ref(false);
 
   function onMouseMove(e) {
-    if (!tiltEl.value) return;
+    if (isCoarsePointer || !tiltEl.value) return;
     const rect = tiltEl.value.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
@@ -23,10 +28,12 @@ export function useTilt() {
   }
 
   function onMouseEnter() {
+    if (isCoarsePointer) return;
     isHovering.value = true;
   }
 
   function onMouseLeave() {
+    if (isCoarsePointer) return;
     isHovering.value = false;
     transform.value = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)';
     glowX.value = 50;

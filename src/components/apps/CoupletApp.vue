@@ -13,6 +13,7 @@ import {
 const keyword = ref('');
 const isGenerating = ref(false);
 const copied = ref(false);
+const isComposing = ref(false);
 
 const couplet = ref({
   upper: '',
@@ -161,7 +162,7 @@ const regen = () => {
 </script>
 
 <template>
-  <div class="h-full flex flex-col bg-slate-950 text-slate-200 overflow-hidden select-none">
+  <div class="h-full flex flex-col bg-slate-950 text-slate-200 overflow-hidden">
     <div class="h-full flex flex-col md:flex-row">
       <!-- ===== Left: Generator ===== -->
       <div class="flex-1 flex flex-col min-h-0 p-6 md:p-8">
@@ -181,7 +182,9 @@ const regen = () => {
           <div class="relative">
             <input
               v-model="keyword"
-              @keydown.enter="generateCouplet()"
+              @keydown.enter="!isComposing && generateCouplet()"
+              @compositionstart="isComposing = true"
+              @compositionend="isComposing = false"
               placeholder="输入主题关键词，如：春天、团圆、事业..."
               class="w-full bg-slate-900/80 border border-white/[0.08] rounded-2xl px-5 py-4 pr-12 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-amber-500/50 focus:bg-slate-900 transition-all"
             />
@@ -292,7 +295,7 @@ const regen = () => {
           <p class="text-xs text-slate-600 text-center">还没有生成对联<br/>输入主题开始创作吧</p>
         </div>
 
-        <div v-else class="flex-1 overflow-y-auto p-3 space-y-2">
+        <div v-else class="flex-1 overflow-y-auto p-3 space-y-2 pb-safe-min">
           <div
             v-for="(item, idx) in history"
             :key="item.id"
